@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RouteTracker - Registro de Rotas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #34C759;
+            --danger-color: #FF3B30;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding-bottom: 80px;
+            background-color: #f5f5f7;
+        }
+        .navbar {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        .tab-content {
+            padding: 15px;
+        }
+        .btn-ios {
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-weight: 500;
+            border: none;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 10px 15px;
+            border: 1px solid #d1d1d6;
+        }
+        .time-entry {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .calendar-day {
+            border: 1px solid #e5e5ea;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: white;
+        }
+        .calendar-day.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .calendar-day.has-data {
+            background-color: #e8f4ff;
+        }
+        .nav-tabs {
+            border-bottom: none;
+            background: white;
+            border-radius: 12px;
+            padding: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            color: #8e8e93;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: transparent;
+        }
+        .tab-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        textarea {
+            min-height: 100px;
+            resize: none;
+        }
+        .notes-section {
+            margin-top: 15px;
+        }
+        .period-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegação -->
+    <nav class="navbar navbar-light bg-light fixed-top">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">RouteTracker</span>
+        </div>
+    </nav>
+
+    <!-- Conteúdo principal -->
+    <div class="container mt-5">
+        <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab">
+                    <i class="fas fa-route tab-icon"></i>
+                    <span>Rota</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hours-tab" data-bs-toggle="tab" data-bs-target="#hours" type="button" role="tab">
+                    <i class="fas fa-clock tab-icon"></i>
+                    <span>Horas</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                    <i class="fas fa-calendar-alt tab-icon"></i>
+                    <span>Histórico</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Aba de Registro -->
+            <div class="tab-pane fade show active" id="home" role="tabpanel">
+                <div class="mb-3">
+                    <label for="clientName" class="form-label">Cliente</label>
+                    <input type="text" class="form-control" id="clientName" placeholder="Nome do cliente">
+                </div>
+                
+                <div class="time-entry">
+                    <h5><i class="fas fa-map-marked-alt me-2"></i>Registro de Tempos</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Início da Jornada</label>
+                        <div class="d-flex">
+                            <input type="time" class="form-control me-2" id="startTime">
+                            <button class="btn btn-outline-primary" onclick="getCurrentLocation('start')">
+                                <i class="fas fa-location-arrow"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Chegada no Cliente</label>
+                        <div class="d-flex">
+                            <input type="time" class="form-control me-2" id="arrivalTime">
+                            <button class="btn btn-outline-primary" onclick="getCurrentLocation('arrival')">
+                                <i class="fas fa-location-arrow"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Saída do Cliente</label>
+                        <div class="d-flex">
+                            <input type="time" class="form-control me-2" id="departureTime">
+                            <button class="btn btn-outline-primary" onclick="getCurrentLocation('departure')">
+                                <i class="fas fa-location-arrow"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Fim da Jornada</label>
+                        <div class="d-flex">
+                            <input type="time" class="form-control me-2" id="endTime">
+                            <button class="btn btn-outline-primary" onclick="getCurrentLocation('end')">
+                                <i class="fas fa-location-arrow"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Almoço?</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="lunchOption" id="lunchYes" value="yes" checked>
+                            <label class="form-check-label" for="lunchYes">Sim (1h de almoço)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="lunchOption" id="lunchNo" value="no">
+                            <label class="form-check-label" for="lunchNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="time-entry notes-section">
+                    <h5><i class="fas fa-edit me-2"></i>Anotações</h5>
+                    <textarea class="form-control" id="routeNotes" placeholder="Adicione observações importantes sobre esta rota..."></textarea>
+                </div>
+                
+                <button class="btn btn-primary btn-ios w-100 mt-3" onclick="saveRoute()">
+                    <i class="fas fa-save me-2"></i>Salvar Rota
+                </button>
+            </div>
+
+            <!-- Aba de Cálculo de Horas -->
+            <div class="tab-pane fade" id="hours" role="tabpanel">
+                <div class="mb-3">
+                    <label for="selectedDate" class="form-label">Selecione a Data</label>
+                    <input type="date" class="form-control" id="selectedDate" value="">
+                </div>
+                
+                <div class="time-entry">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Resumo Diário</h5>
+                    <div id="dailySummary">
+                        <p class="text-muted">Nenhum registro encontrado para esta data.</p>
+                    </div>
+                </div>
+                
+                <div class="time-entry mt-3">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Ciclo Mensal (26-25)</h5>
+                    <div id="periodInfo" class="period-info"></div>
+                    <div id="totalHours">
+                        <p class="text-muted">0 horas</p>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary btn-ios w-100 mt-3" onclick="exportData()">
+                    <i class="fas fa-download me-2"></i>Exportar Relatório
+                </button>
+            </div>
+
+            <!-- Aba de Histórico -->
+            <div class="tab-pane fade" id="history" role="tabpanel">
+                <div class="mb-3">
+                    <label for="monthSelector" class="form-label">Selecione o Mês</label>
+                    <input type="month" class="form-control" id="monthSelector" value="">
+                </div>
+                
+                <div id="calendar" class="mb-3 bg-white p-2 rounded-3 shadow-sm"></div>
+                
+                <div id="dayDetails" class="time-entry" style="display: none;">
+                    <h5 id="detailDate"><i class="fas fa-calendar-day me-2"></i><span class="date-text"></span></h5>
+                    <div id="detailContent" class="mt-3"></div>
+                    <button class="btn btn-outline-primary btn-ios mt-3" onclick="editEntry()">
+                        <i class="fas fa-edit me-2"></i>Editar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="editModalBody">
+                    <!-- Conteúdo dinâmico -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditedEntry()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Definir data atual nos campos de data
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('selectedDate').value = today;
+            document.getElementById('monthSelector').value = today.substr(0, 7);
+            
+            // Carregar calendário
+            generateCalendar();
+            
+            // Verificar se há dados salvos
+            if (!localStorage.getItem('routes')) {
+                localStorage.setItem('routes', JSON.stringify([]));
+            }
+            
+            // Calcular horas do período 26-25
+            updateMonthlyHours();
+        });
+
+        // Função para calcular horas entre dias 26-25
+        function calculateMonthlyHours() {
+            const routes = JSON.parse(localStorage.getItem('routes')) || [];
+            if (routes.length === 0) return { totalHours: 0, totalMinutes: 0, period: '' };
+
+            // Encontrar o período atual (do dia 26 ao dia 25)
+            const today = new Date();
+            let startDate, endDate;
+
+            if (today.getDate() >= 26) {
+                // Período atual: dia 26 deste mês até dia 25 do próximo mês
+                startDate = new Date(today.getFullYear(), today.getMonth(), 26);
+                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 25);
+            } else {
+                // Período atual: dia 26 do mês passado até dia 25 deste mês
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 26);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 25);
+            }
+
+            // Filtrar rotas dentro do período
+            const periodRoutes = routes.filter(route => {
+                const routeDate = new Date(route.date);
+                return routeDate >= startDate && routeDate <= endDate;
+            });
+
+            // Calcular o total de horas
+            let totalMs = 0;
+
+            periodRoutes.forEach(route => {
+                const start = new Date(`${route.date}T${route.startTime}`);
+                const end = new Date(`${route.date}T${route.endTime}`);
+                totalMs += (end - start);
+
+                // Subtrair 1h se almoçou
+                if (route.lunch) {
+                    totalMs -= 3600000; // 1h em milissegundos
+                }
+            });
+
+            const totalHours = Math.floor(totalMs / 3600000);
+            const totalMinutes = Math.floor((totalMs % 3600000) / 60000);
+
+            return {
+                totalHours,
+                totalMinutes,
+                period: `${formatDate(startDate)} a ${formatDate(endDate)}`,
+                daysCount: periodRoutes.length
+            };
+        }
+
+        // Atualizar exibição das horas mensais
+        function updateMonthlyHours() {
+            const monthlyHours = calculateMonthlyHours();
+            document.getElementById('periodInfo').textContent = `Período: ${monthlyHours.period} (${monthlyHours.daysCount} dias registrados)`;
+            document.getElementById('totalHours').innerHTML = `
+                <p><strong>Total acumulado:</strong> ${monthlyHours.totalHours}h ${monthlyHours.totalMinutes}m</p>
+            `;
+        }
+
+        // Formatar data para exibição
+        function formatDate(date) {
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        // Obter localização atual
+        function getCurrentLocation(stage) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const now = new Date();
+                        const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                                         now.getMinutes().toString().padStart(2, '0');
+                        
+                        // Atualizar o campo de tempo correspondente
+                        document.getElementById(stage + 'Time').value = timeString;
+                        
+                        // Armazenar localização temporariamente
+                        sessionStorage.setItem('currentLocation', JSON.stringify({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            stage: stage,
+                            timestamp: now.getTime()
+                        }));
+                        
+                        alert('Localização registrada para ' + stage);
+                    },
+                    (error) => {
+                        alert('Erro ao obter localização: ' + error.message);
+                    }
+                );
+            } else {
+                alert('Geolocalização não suportada pelo navegador');
+            }
+        }
+
+        // Salvar rota
+        function saveRoute() {
+            const clientName = document.getElementById('clientName').value;
+            const startTime = document.getElementById('startTime').value;
+            const arrivalTime = document.getElementById('arrivalTime').value;
+            const departureTime = document.getElementById('departureTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const lunchOption = document.querySelector('input[name="lunchOption"]:checked').value;
+            const notes = document.getElementById('routeNotes').value;
+            
+            if (!clientName || !startTime || !arrivalTime || !departureTime || !endTime) {
+                alert('Preencha todos os campos obrigatórios');
+                return;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            const routes = JSON.parse(localStorage.getItem('routes'));
+            
+            // Verificar se já existe registro para hoje
+            const existingIndex = routes.findIndex(route => route.date === today);
+            
+            if (existingIndex !== -1) {
+                if (!confirm('Já existe um registro para hoje. Deseja substituí-lo?')) {
+                    return;
+                }
+                routes.splice(existingIndex, 1);
+            }
+            
+            // Obter localizações salvas
+            const locations = {};
+            ['start', 'arrival', 'departure', 'end'].forEach(stage => {
+                const loc = sessionStorage.getItem('currentLocation');
+                if (loc) {
+                    const locData = JSON.parse(loc);
+                    if (locData.stage === stage) {
+                        locations[stage] = {
+                            lat: locData.lat,
+                            lng: locData.lng,
+                            timestamp: locData.timestamp
+                        };
+                    }
+                }
+            });
+            
+            // Criar novo registro
+            const newRoute = {
+                date: today,
+                clientName,
+                startTime,
+                arrivalTime,
+                departureTime,
+                endTime,
+                lunch: lunchOption === 'yes',
+                locations,
+                notes
+            };
+            
+            routes.push(newRoute);
+            localStorage.setItem('routes', JSON.stringify(routes));
+            
+            alert('Rota salva com sucesso!');
+            resetForm();
+            updateMonthlyHours();
+        }
+
+        // Resetar formulário
+        function resetForm() {
+            document.getElementById('clientName').value = '';
+            document.getElementById('startTime').value = '';
+            document.getElementById('arrivalTime').value = '';
+            document.getElementById('departureTime').value = '';
+            document.getElementById('endTime').value = '';
+            document.getElementById('routeNotes').value = '';
+            document.getElementById('lunchYes').checked = true;
+        }
+
+        // Gerar calendário
+        function generateCalendar() {
+            const monthSelector = document.getElementById('monthSelector').value;
+            const [year, month] = monthSelector.split('-');
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            const daysInMonth = lastDay.getDate();
+            
+            const routes = JSON.parse(localStorage.getItem('routes'));
+            const monthRoutes = routes.filter(route => route.date.startsWith(monthSelector));
+            
+            let calendarHTML = '<div class="row">';
+            
+            // Cabeçalho com dias da semana
+            const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            weekdays.forEach(day => {
+                calendarHTML += `<div class="col text-center fw-bold">${day}</div>`;
+            });
+            
+            calendarHTML += '</div><div class="row">';
+            
+            // Dias vazios no início do mês
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                calendarHTML += '<div class="col calendar-day"></div>';
+            }
+            
+            // Dias do mês
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${month.padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const hasData = monthRoutes.some(route => route.date === dateStr);
+                
+                calendarHTML += `
+                    <div class="col calendar-day ${hasData ? 'has-data' : ''}" 
+                         onclick="showDayDetails('${dateStr}')">
+                        ${day}
+                    </div>
+                `;
+                
+                if ((firstDay.getDay() + day) % 7 === 0) {
+                    calendarHTML += '</div><div class="row">';
+                }
+            }
+            
+            calendarHTML += '</div>';
+            document.getElementById('calendar').innerHTML = calendarHTML;
+        }
+
+        // Mostrar detalhes do dia
+        function showDayDetails(date) {
+            const routes = JSON.parse(localStorage.getItem('routes'));
+            const dayRoute = routes.find(route => route.date === date);
+            
+            if (!dayRoute) {
+                document.getElementById('dayDetails').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('detailDate').querySelector('.date-text').textContent = new Date(date).toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            let contentHTML = `
+                <div class="mb-3">
+                    <h6><i class="fas fa-user me-2"></i>Cliente</h6>
+                    <p>${dayRoute.clientName}</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="fas fa-play-circle me-2"></i>Início</h6>
+                        <p>${dayRoute.startTime}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="fas fa-map-marker-alt me-2"></i>Chegada</h6>
+                        <p>${dayRoute.arrivalTime}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="fas fa-sign-out-alt me-2"></i>Saída</h6>
+                        <p>${dayRoute.departureTime}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="fas fa-stop-circle me-2"></i>Fim</h6>
+                        <p>${dayRoute.endTime}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-utensils me-2"></i>Almoço</h6>
+                    <p>${dayRoute.lunch ? 'Sim (1h descontada)' : 'Não'}</p>
+                </div>
+            `;
+            
+            // Adicionar anotações se existirem
+            if (dayRoute.notes && dayRoute.notes.trim() !== '') {
+                contentHTML += `
+                    <div class="mb-3">
+                        <h6><i class="fas fa-edit me-2"></i>Anotações</h6>
+                        <div class="bg-light p-3 rounded">${dayRoute.notes.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+            }
+            
+            // Adicionar localizações se existirem
+            if (dayRoute.locations && Object.keys(dayRoute.locations).length > 0) {
+                contentHTML += `<div class="mb-3"><h6><i class="fas fa-map-pin me-2"></i>Localizações</h6>`;
+                
+                for (const [stage, loc] of Object.entries(dayRoute.locations)) {
+                    const stageName = {
+                        'start': 'Início',
+                        'arrival': 'Chegada',
+                        'departure': 'Saída',
+                        'end': 'Fim'
+                    }[stage];
+                    
+                    contentHTML += `
+                        <div class="mb-2">
+                            <strong>${stageName}:</strong>
+                            <div>Lat: ${loc.lat.toFixed(6)}, Long: ${loc.lng.toFixed(6)}</div>
+                        </div>
+                    `;
+                }
+                
+                contentHTML += `</div>`;
+            }
+            
+            document.getElementById('detailContent').innerHTML = contentHTML;
+            document.getElementById('dayDetails').style.display = 'block';
+            
+            // Armazenar data selecionada para edição
+            sessionStorage.setItem('selectedDate', date);
+        }
+
+        // Editar entrada
+        function editEntry() {
+            const date = sessionStorage.getItem('selectedDate');
+            const routes = JSON.parse(localStorage.getItem('routes'));
+            const routeIndex = routes.findIndex(route => route.date === date);
+            
+            if (routeIndex === -1) return;
+            
+            const route = routes[routeIndex];
+            
+            let editHTML = `
+                <div class="mb-3">
+                    <label class="form-label">Cliente</label>
+                    <input type="text" class="form-control" id="editClientName" value="${route.clientName}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Início</label>
+                    <input type="time" class="form-control" id="editStartTime" value="${route.startTime}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Chegada</label>
+                    <input type="time" class="form-control" id="editArrivalTime" value="${route.arrivalTime}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Saída</label>
+                    <input type="time" class="form-control" id="editDepartureTime" value="${route.departureTime}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Fim</label>
+                    <input type="time" class="form-control" id="editEndTime" value="${route.endTime}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Almoço?</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="editLunchOption" id="editLunchYes" value="yes" ${route.lunch ? 'checked' : ''}>
+                        <label class="form-check-label" for="editLunchYes">Sim</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="editLunchOption" id="editLunchNo" value="no" ${!route.lunch ? 'checked' : ''}>
+                        <label class="form-check-label" for="editLunchNo">Não</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Anotações</label>
+                    <textarea class="form-control" id="editNotes">${route.notes || ''}</textarea>
+                </div>
+                <input type="hidden" id="editRouteIndex" value="${routeIndex}">
+            `;
+            
+            document.getElementById('editModalBody').innerHTML = editHTML;
+            const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        }
+
+        // Salvar entrada editada
+        function saveEditedEntry() {
+            const routeIndex = document.getElementById('editRouteIndex').value;
+            const routes = JSON.parse(localStorage.getItem('routes'));
+            
+            routes[routeIndex] = {
+                ...routes[routeIndex],
+                clientName: document.getElementById('editClientName').value,
+                startTime: document.getElementById('editStartTime').value,
+                arrivalTime: document.getElementById('editArrivalTime').value,
+                departureTime: document.getElementById('editDepartureTime').value,
+                endTime: document.getElementById('editEndTime').value,
+                lunch: document.querySelector('input[name="editLunchOption"]:checked').value === 'yes',
+                notes: document.getElementById('editNotes').value
+            };
+            
+            localStorage.setItem('routes', JSON.stringify(routes));
+            
+            const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+            editModal.hide();
+            
+            // Atualizar exibição
+            showDayDetails(routes[routeIndex].date);
+            generateCalendar();
+            updateMonthlyHours();
+        }
+
+        // Exportar dados
+        function exportData() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const exportType = prompt('Exportar como:\n1. Relatório de Horas\n2. Relatório de Rotas\n\nDigite 1 ou 2');
+            
+            if (exportType === '1') {
+                // Relatório de Horas
+                const selectedDate = document.getElementById('selectedDate').value;
+                const routes = JSON.parse(localStorage.getItem('routes'));
+                const dayRoute = routes.find(route => route.date === selectedDate);
+                
+                if (!dayRoute) {
+                    alert('Nenhum registro encontrado para esta data');
+                    return;
+                }
+                
+                // Calcular horas trabalhadas
+                const start = new Date(`${selectedDate}T${dayRoute.startTime}`);
+                const end = new Date(`${selectedDate}T${dayRoute.endTime}`);
+                let totalMs = end - start;
+                
+                if (dayRoute.lunch) {
+                    totalMs -= 3600000; // Subtrair 1 hora de almoço
+                }
+                
+                const totalHours = Math.floor(totalMs / 3600000);
+                const totalMinutes = Math.floor((totalMs % 3600000) / 60000);
+                
+                doc.text(`Relatório de Horas - ${selectedDate}`, 10, 10);
+                doc.text(`Cliente: ${dayRoute.clientName}`, 10, 20);
+                doc.text(`Início: ${dayRoute.startTime}`, 10, 30);
+                doc.text(`Fim: ${dayRoute.endTime}`, 10, 40);
+                doc.text(`Almoço: ${dayRoute.lunch ? 'Sim' : 'Não'}`, 10, 50);
+                doc.text(`Total: ${totalHours}h ${totalMinutes}m`, 10, 60);
+                
+                // Adicionar anotações se existirem
+                if (dayRoute.notes && dayRoute.notes.trim() !== '') {
+                    doc.text('Anotações:', 10, 70);
+                    const splitNotes = doc.splitTextToSize(dayRoute.notes, 180);
+                    doc.text(splitNotes, 10, 80);
+                }
+                
+                doc.save(`horas_${selectedDate}.pdf`);
+            } else if (exportType === '2') {
+                // Relatório de Rotas
+                const selectedDate = document.getElementById('selectedDate').value;
+                const routes = JSON.parse(localStorage.getItem('routes'));
+                const dayRoute = routes.find(route => route.date === selectedDate);
+                
+                if (!dayRoute) {
+                    alert('Nenhum registro encontrado para esta data');
+                    return;
+                }
+                
+                doc.text(`Relatório de Rota - ${selectedDate}`, 10, 10);
+                doc.text(`Cliente: ${dayRoute.clientName}`, 10, 20);
+                doc.text(`Início: ${dayRoute.startTime}`, 10, 30);
+                doc.text(`Chegada: ${dayRoute.arrivalTime}`, 10, 40);
+                doc.text(`Saída: ${dayRoute.departureTime}`, 10, 50);
+                doc.text(`Fim: ${dayRoute.endTime}`, 10, 60);
+                
+                // Adicionar anotações se existirem
+                if (dayRoute.notes && dayRoute.notes.trim() !== '') {
+                    doc.text('Anotações:', 10, 70);
+                    const splitNotes = doc.splitTextToSize(dayRoute.notes, 180);
+                    doc.text(splitNotes, 10, 80);
+                }
+                
+                // Adicionar localizações se disponíveis
+                let yPos = dayRoute.notes ? 100 : 80;
+                if (dayRoute.locations) {
+                    doc.text('Localizações:', 10, yPos);
+                    yPos += 10;
+                    
+                    for (const [stage, loc] of Object.entries(dayRoute.locations)) {
+                        const stageName = {
+                            'start': 'Início',
+                            'arrival': 'Chegada',
+                            'departure': 'Saída',
+                            'end': 'Fim'
+                        }[stage];
+                        
+                        doc.text(`${stageName}: ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`, 15, yPos);
+                        yPos += 10;
+                    }
+                }
+                
+                doc.save(`rota_${selectedDate}.pdf`);
+            }
+        }
+
+        // Atualizar resumo diário
+        document.getElementById('selectedDate').addEventListener('change', function() {
+            const selectedDate = this.value;
+            const routes = JSON.parse(localStorage.getItem('routes'));
+            const dayRoute = routes.find(route => route.date === selectedDate);
+            
+            const summaryElement = document.getElementById('dailySummary');
+            
+            if (!dayRoute) {
+                summaryElement.innerHTML = '<p class="text-muted">Nenhum registro encontrado para esta data.</p>';
+                return;
+            }
+            
+            // Cálculo diário
+            const start = new Date(`${selectedDate}T${dayRoute.startTime}`);
+            const arrival = new Date(`${selectedDate}T${dayRoute.arrivalTime}`);
+            const departure = new Date(`${selectedDate}T${dayRoute.departureTime}`);
+            const end = new Date(`${selectedDate}T${dayRoute.endTime}`);
+            
+            const toClientMs = arrival - start;
+            const atClientMs = departure - arrival;
+            const fromClientMs = end - departure;
+            let dayTotalMs = end - start;
+            
+            if (dayRoute.lunch) {
+                dayTotalMs -= 3600000;
+            }
+            
+            summaryElement.innerHTML = `
+                <p><strong>Para o cliente:</strong> ${msToTime(toClientMs)}</p>
+                <p><strong>No cliente:</strong> ${msToTime(atClientMs)}</p>
+                <p><strong>Volta:</strong> ${msToTime(fromClientMs)}</p>
+                <p><strong>Total do dia:</strong> ${msToTime(dayTotalMs)}</p>
+            `;
+        });
+
+        // Função auxiliar para formatar tempo
+        function msToTime(ms) {
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            return `${hours}h ${minutes}m`;
+        }
+
+        // Atualizar calendário quando o mês muda
+        document.getElementById('monthSelector').addEventListener('change', generateCalendar);
+    </script>
+</body>
+</html>
