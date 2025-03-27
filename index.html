@@ -149,8 +149,23 @@
             -webkit-appearance: none;
         }
         
+        .time-input button {
+            margin-left: 10px;
+            padding: 8px 12px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
         .client-info {
             margin-bottom: 20px;
+            border: 1px solid #D1D1D6;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
         }
         
         .client-info label {
@@ -174,6 +189,20 @@
             min-height: 80px;
         }
         
+        .remove-client {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #FF3B30;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
         .button {
             background-color: var(--primary-color);
             color: white;
@@ -188,6 +217,11 @@
         
         .button.secondary {
             background-color: var(--secondary-color);
+            margin-top: 10px;
+        }
+        
+        .button.tertiary {
+            background-color: #FF9500;
             margin-top: 10px;
         }
         
@@ -311,17 +345,12 @@
             transform: translateX(20px);
         }
         
-        .lunch-duration {
-            display: none;
-            margin-bottom: 15px;
-        }
-        
-        .lunch-duration.active {
-            display: block;
-        }
-        
         .hidden {
             display: none;
+        }
+        
+        .client-block {
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -342,65 +371,15 @@
             <h2 class="card-title">Checkpoints da Rota</h2>
             
             <div class="checkpoint">
-                <div class="checkpoint-time">18:55</div>
+                <div class="checkpoint-time">
+                    <input type="time" id="start-time" value="08:00">
+                    <button class="gps-btn" onclick="getGPSLocation('start-time')">GPS</button>
+                </div>
                 <div class="checkpoint-details">
                     <div>Início</div>
-                    <div class="checkpoint-address">Calle Villamediana, El Carmen, Cascajos, Logroño, Rioja, 26003, Spain</div>
+                    <div class="checkpoint-address" id="start-address">Endereço de início</div>
                 </div>
             </div>
-            
-            <div class="checkpoint">
-                <div class="checkpoint-time">18:55</div>
-                <div class="checkpoint-details">
-                    <div>Chegada no Cliente</div>
-                    <div class="checkpoint-address">Calle Villamediana, El Carmen, Cascajos, Logroño, Rioja, 26003, Spain</div>
-                </div>
-            </div>
-            
-            <div class="checkpoint">
-                <div class="checkpoint-time">--:--</div>
-                <div class="checkpoint-details">
-                    <div>Saída do Cliente</div>
-                    <div class="checkpoint-address">Calle Villamediana, El Carmen, Cascajos, Logroño, Rioja, 26003, Spain</div>
-                </div>
-            </div>
-            
-            <div class="checkpoint">
-                <div class="checkpoint-time">--:--</div>
-                <div class="checkpoint-details">
-                    <div>Fim</div>
-                    <div class="checkpoint-address"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2 class="card-title">Informações do Cliente</h2>
-            
-            <div class="client-info">
-                <label>Nome do Cliente</label>
-                <input type="text" placeholder="Digite o nome do cliente" id="client-name">
-            </div>
-            
-            <div class="client-info">
-                <label>Endereço do Cliente</label>
-                <input type="text" placeholder="Digite o endereço do cliente" id="client-address">
-            </div>
-            
-            <div class="client-info">
-                <label>Notas do Serviço</label>
-                <textarea placeholder="Adicione notas sobre o serviço" id="service-notes"></textarea>
-            </div>
-            
-            <button class="button" id="add-client">Adicionar Cliente</button>
-            <button class="button secondary" id="end-workday">Finalizar Jornada</button>
-        </div>
-    </div>
-    
-    <!-- Horas Tab -->
-    <div id="hours-tab" class="container hidden">
-        <div class="card">
-            <h2 class="card-title">Horas Diárias</h2>
             
             <div class="lunch-toggle">
                 <div>Fez pausa para almoço?</div>
@@ -410,29 +389,40 @@
                 </label>
             </div>
             
-            <div class="lunch-duration" id="lunch-duration">
-                <label>Duração do Almoço (minutos)</label>
-                <input type="number" value="60" min="1" max="240" id="lunch-duration-input">
+            <div id="client-blocks">
+                <!-- Client blocks will be added here dynamically -->
             </div>
             
-            <div class="time-input">
-                <label>Hora de Início</label>
-                <input type="time" value="00:00" id="start-time">
+            <button class="button tertiary" id="add-client-btn">+ Adicionar Cliente</button>
+            
+            <div class="checkpoint">
+                <div class="checkpoint-time">
+                    <input type="time" id="end-time" value="17:00">
+                    <button class="gps-btn" onclick="getGPSLocation('end-time')">GPS</button>
+                </div>
+                <div class="checkpoint-details">
+                    <div>Fim</div>
+                    <div class="checkpoint-address" id="end-address">Endereço de término</div>
+                </div>
             </div>
+            
+            <button class="button" id="save-btn">SALVAR</button>
+        </div>
+    </div>
+    
+    <!-- Horas Tab -->
+    <div id="hours-tab" class="container hidden">
+        <div class="card">
+            <h2 class="card-title">Horas Diárias</h2>
             
             <div class="time-input">
                 <label>Total de Horas</label>
-                <input type="text" value="0h 00m" readonly id="total-hours">
+                <input type="text" value="0h 00m" readonly id="total-hours-day">
             </div>
             
             <div class="time-input">
-                <label>Hora de Término</label>
-                <input type="time" value="00:00" id="end-time">
-            </div>
-            
-            <div class="time-input">
-                <label>Horas (Após Almoço)</label>
-                <input type="text" value="0h 00m" readonly id="hours-after-lunch">
+                <label>Horas Trabalhadas</label>
+                <input type="text" value="0h 00m" readonly id="worked-hours">
             </div>
         </div>
         
@@ -442,12 +432,10 @@
             <table class="summary-table">
                 <tr>
                     <th>DATA</th>
-                    <th>INÍCIO</th>
-                    <th>TÉRMINO</th>
                     <th>HORAS</th>
                 </tr>
                 <tr>
-                    <td colspan="4" class="no-data">Nenhuma rota registrada este mês</td>
+                    <td colspan="2" class="no-data">Nenhuma rota registrada este mês</td>
                 </tr>
             </table>
         </div>
@@ -455,32 +443,6 @@
         <div class="card">
             <h2 class="card-title">Total Mensal</h2>
             <div class="stat-value">0h 00m</div>
-        </div>
-        
-        <div class="card">
-            <h2 class="card-title">Estatísticas</h2>
-            
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-value">0h 00m</div>
-                    <div class="stat-label">Média Diária</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-value">0h 00m</div>
-                    <div class="stat-label">Total do Mês</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Clientes</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Dias Trabalhados</div>
-                </div>
-            </div>
         </div>
     </div>
     
@@ -580,6 +542,86 @@
     </div>
     
     <script>
+        // Client block template
+        const clientBlockTemplate = `
+        <div class="client-block">
+            <div class="checkpoint">
+                <div class="checkpoint-time">
+                    <input type="time" class="client-arrival-time" value="12:00">
+                    <button class="gps-btn" onclick="getGPSLocation(this)">GPS</button>
+                </div>
+                <div class="checkpoint-details">
+                    <div>Chegada no Cliente</div>
+                    <div class="checkpoint-address client-arrival-address">Endereço do cliente</div>
+                </div>
+            </div>
+            
+            <div class="client-info">
+                <button class="remove-client" onclick="removeClientBlock(this)">×</button>
+                <div>
+                    <label>Nome do Cliente</label>
+                    <input type="text" class="client-name" placeholder="Digite o nome do cliente">
+                </div>
+                
+                <div>
+                    <label>Endereço do Cliente</label>
+                    <input type="text" class="client-address" placeholder="Digite o endereço do cliente">
+                </div>
+                
+                <div>
+                    <label>Notas do Serviço</label>
+                    <textarea class="service-notes" placeholder="Adicione notas sobre o serviço"></textarea>
+                </div>
+            </div>
+            
+            <div class="checkpoint">
+                <div class="checkpoint-time">
+                    <input type="time" class="client-departure-time" value="13:00">
+                    <button class="gps-btn" onclick="getGPSLocation(this)">GPS</button>
+                </div>
+                <div class="checkpoint-details">
+                    <div>Saída do Cliente</div>
+                    <div class="checkpoint-address client-departure-address">Endereço do cliente</div>
+                </div>
+            </div>
+        </div>
+        `;
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    const tabName = this.getAttribute('data-tab');
+                    showTab(tabName, e);
+                });
+            });
+            
+            // Add first client block
+            addClientBlock();
+            
+            // Add event listeners
+            document.getElementById('add-client-btn').addEventListener('click', addClientBlock);
+            document.getElementById('save-btn').addEventListener('click', saveRoute);
+            document.getElementById('lunch-toggle').addEventListener('change', calculateHours);
+            
+            // Time inputs that should trigger calculation
+            document.getElementById('start-time').addEventListener('change', calculateHours);
+            document.getElementById('end-time').addEventListener('change', calculateHours);
+            
+            // Set current date
+            updateCurrentDate();
+            
+            // Focus on inputs when tapped (iOS fix)
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('touchstart', function() {
+                    this.focus();
+                });
+            });
+        });
+        
         // Show/hide tabs
         function showTab(tabName, event) {
             // Hide all tabs
@@ -598,29 +640,126 @@
             if (event && event.currentTarget) {
                 event.currentTarget.classList.add('active');
             }
+            
+            // If showing hours tab, update calculations
+            if (tabName === 'hours') {
+                calculateHours();
+            }
         }
         
-        // Initialize tab switching
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                    const tabName = this.getAttribute('data-tab');
-                    showTab(tabName, e);
-                });
-            });
+        // Add a new client block
+        function addClientBlock() {
+            const clientBlocks = document.getElementById('client-blocks');
+            const newBlock = document.createElement('div');
+            newBlock.innerHTML = clientBlockTemplate;
+            clientBlocks.appendChild(newBlock);
             
-            // Lunch break toggle
-            document.getElementById('lunch-toggle').addEventListener('change', function() {
-                const lunchDuration = document.getElementById('lunch-duration');
-                if (this.checked) {
-                    lunchDuration.classList.add('active');
-                } else {
-                    lunchDuration.classList.remove('active');
-                }
+            // Add event listeners to new time inputs
+            const timeInputs = newBlock.querySelectorAll('input[type="time"]');
+            timeInputs.forEach(input => {
+                input.addEventListener('change', calculateHours);
             });
+        }
+        
+        // Remove a client block
+        function removeClientBlock(button) {
+            const clientBlock = button.closest('.client-block');
+            if (document.querySelectorAll('.client-block').length > 1) {
+                clientBlock.remove();
+                calculateHours();
+            } else {
+                alert("Você precisa ter pelo menos um cliente cadastrado.");
+            }
+        }
+        
+        // Calculate worked hours
+        function calculateHours() {
+            const startTime = document.getElementById('start-time').value;
+            const endTime = document.getElementById('end-time').value;
+            const lunchBreak = document.getElementById('lunch-toggle').checked;
             
-            // Set current date
+            if (!startTime || !endTime) return;
+            
+            // Calculate total hours
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+            
+            let diffMs = end - start;
+            if (diffMs < 0) {
+                // Handle overnight (just add 24 hours)
+                diffMs += 24 * 60 * 60 * 1000;
+            }
+            
+            const diffMins = Math.floor(diffMs / 60000);
+            const hours = Math.floor(diffMins / 60);
+            const mins = diffMins % 60;
+            
+            // Display total hours
+            document.getElementById('total-hours-day').value = `${hours}h ${mins.toString().padStart(2, '0')}m`;
+            
+            // Calculate worked hours (subtract 1h if lunch break)
+            let workedHours = diffMins;
+            if (lunchBreak) {
+                workedHours = Math.max(0, workedHours - 60); // Subtract 1 hour
+            }
+            
+            const workedH = Math.floor(workedHours / 60);
+            const workedM = workedHours % 60;
+            
+            // Display worked hours
+            document.getElementById('worked-hours').value = `${workedH}h ${workedM.toString().padStart(2, '0')}m`;
+        }
+        
+        // Simulate GPS location (in a real app, this would use the Geolocation API)
+        function getGPSLocation(element) {
+            // This is a simulation - in a real app, you would use:
+            // navigator.geolocation.getCurrentPosition()
+            
+            let timeInput;
+            if (typeof element === 'string') {
+                // If element is an ID
+                timeInput = document.getElementById(element);
+            } else {
+                // If element is a button next to the input
+                timeInput = element.parentElement.querySelector('input[type="time"]');
+            }
+            
+            // Set current time
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const mins = now.getMinutes().toString().padStart(2, '0');
+            timeInput.value = `${hours}:${mins}`;
+            
+            // Simulate address (in real app, you would reverse geocode the coordinates)
+            let addressElement;
+            if (element === 'start-time') {
+                addressElement = document.getElementById('start-address');
+                addressElement.textContent = "Endereço de início via GPS";
+            } else if (element === 'end-time') {
+                addressElement = document.getElementById('end-address');
+                addressElement.textContent = "Endereço de término via GPS";
+            } else {
+                addressElement = element.closest('.checkpoint').querySelector('.checkpoint-address');
+                addressElement.textContent = "Endereço do cliente via GPS";
+            }
+            
+            // Recalculate hours if needed
+            if (timeInput.id === 'start-time' || timeInput.id === 'end-time') {
+                calculateHours();
+            }
+            
+            alert("Localização obtida via GPS e hora definida para agora.");
+        }
+        
+        // Save route data
+        function saveRoute() {
+            // In a real app, this would save to localStorage or a backend
+            alert("Rota salva com sucesso!");
+            calculateHours();
+        }
+        
+        // Update current date display
+        function updateCurrentDate() {
             const now = new Date();
             const day = now.getDate();
             const month = now.getMonth() + 1;
@@ -639,15 +778,7 @@
             if (dateText) {
                 dateText.textContent = `Data selecionada: ${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
             }
-            
-            // Focus on inputs when tapped (iOS fix)
-            const inputs = document.querySelectorAll('input, textarea');
-            inputs.forEach(input => {
-                input.addEventListener('touchstart', function() {
-                    this.focus();
-                });
-            });
-        });
+        }
     </script>
 </body>
 </html>
