@@ -10,6 +10,7 @@
             --secondary-color: #34C759;
             --orange-color: #FF9500;
             --red-color: #FF3B30;
+            --black-color: #000000;
             --background-color: #F2F2F7;
             --card-color: #FFFFFF;
             --text-color: #1C1C1E;
@@ -274,6 +275,11 @@
         }
         
         .button.secondary {
+            background-color: var(--black-color);
+            margin-top: 10px;
+        }
+        
+        .button.tertiary {
             background-color: var(--orange-color);
             margin-top: 10px;
         }
@@ -372,21 +378,103 @@
         }
         
         /* Histórico Tab Styles */
-        .history-item {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
+        .history-day-selector {
+            margin-bottom: 15px;
         }
         
-        .history-date {
+        .history-day-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .history-details {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .history-date-title {
             font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .history-delete-btn {
+            background-color: var(--red-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .history-client {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .history-client:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .history-client-name {
+            font-weight: 500;
             margin-bottom: 5px;
         }
         
-        .history-clients {
-            font-size: 14px;
+        .history-client-info {
+            font-size: 13px;
             color: var(--secondary-text);
+            margin-bottom: 5px;
+        }
+        
+        .history-client-notes {
+            font-size: 13px;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: var(--background-color);
+            border-radius: 6px;
+        }
+        
+        .history-checkpoint {
+            display: flex;
+            margin: 10px 0;
+        }
+        
+        .history-checkpoint-time {
+            min-width: 70px;
+            font-weight: 500;
+        }
+        
+        .history-checkpoint-details {
+            flex: 1;
+        }
+        
+        .history-checkpoint-address {
+            font-size: 13px;
+            color: var(--secondary-text);
+        }
+        
+        .history-edit-btn {
+            background-color: var(--orange-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-top: 15px;
+            cursor: pointer;
+            width: 100%;
         }
         
         .no-history {
@@ -449,6 +537,11 @@
         .modal-button.secondary {
             background-color: var(--border-color);
             color: var(--text-color);
+        }
+        
+        .modal-button.danger {
+            background-color: var(--red-color);
+            color: white;
         }
     </style>
 </head>
@@ -553,8 +646,15 @@
     <div id="history-tab" class="container hidden">
         <div class="section">
             <div class="section-title">Histórico de Rotas</div>
-            <div id="history-list">
-                <!-- History items will be populated dynamically -->
+            
+            <div class="history-day-selector">
+                <select id="history-day-select">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+            
+            <div id="history-details-container">
+                <!-- History details will be populated dynamically -->
             </div>
         </div>
     </div>
@@ -572,7 +672,8 @@
                 startAddress: '',
                 endAddress: '',
                 workedHours: 0
-            }
+            },
+            editingRoute: null
         };
         
         // Client block template
@@ -641,6 +742,7 @@
                 appState.currentRoute.lunchBreak = this.checked;
             });
             document.getElementById('day-select').addEventListener('change', updateDaySummary);
+            document.getElementById('history-day-select').addEventListener('change', showHistoryDetails);
             
             // Initialize time inputs
             document.getElementById('start-time').addEventListener('change', function() {
@@ -714,7 +816,11 @@
             
             if (document.querySelectorAll('.client-block').length > 1) {
                 clientBlock.remove();
-                appState.currentRoute.clients.splice(index, 1);
+                if (appState.editingRoute) {
+                    appState.editingRoute.clients.splice(index, 1);
+                } else {
+                    appState.currentRoute.clients.splice(index, 1);
+                }
             } else {
                 alert("Você precisa ter pelo menos um cliente cadastrado.");
             }
@@ -734,9 +840,17 @@
                 
                 // Update app state
                 if (element === 'start-time') {
-                    appState.currentRoute.startAddress = "Localização via GPS";
+                    if (appState.editingRoute) {
+                        appState.editingRoute.startAddress = "Localização via GPS";
+                    } else {
+                        appState.currentRoute.startAddress = "Localização via GPS";
+                    }
                 } else if (element === 'end-time') {
-                    appState.currentRoute.endAddress = "Localização via GPS";
+                    if (appState.editingRoute) {
+                        appState.editingRoute.endAddress = "Localização via GPS";
+                    } else {
+                        appState.currentRoute.endAddress = "Localização via GPS";
+                    }
                 }
             } else {
                 // If element is a button
@@ -746,11 +860,19 @@
                 if (type === 'arrival') {
                     timeInput = clientBlock.querySelector('.client-arrival-time');
                     addressElement = clientBlock.querySelector('.client-arrival-address');
-                    appState.currentRoute.clients[index].arrivalAddress = "Localização via GPS";
+                    if (appState.editingRoute) {
+                        appState.editingRoute.clients[index].arrivalAddress = "Localização via GPS";
+                    } else {
+                        appState.currentRoute.clients[index].arrivalAddress = "Localização via GPS";
+                    }
                 } else {
                     timeInput = clientBlock.querySelector('.client-departure-time');
                     addressElement = clientBlock.querySelector('.client-departure-address');
-                    appState.currentRoute.clients[index].departureAddress = "Localização via GPS";
+                    if (appState.editingRoute) {
+                        appState.editingRoute.clients[index].departureAddress = "Localização via GPS";
+                    } else {
+                        appState.currentRoute.clients[index].departureAddress = "Localização via GPS";
+                    }
                 }
             }
             
@@ -764,18 +886,34 @@
             // Update app state
             if (typeof element === 'string') {
                 if (element === 'start-time') {
-                    appState.currentRoute.startTime = timeStr;
+                    if (appState.editingRoute) {
+                        appState.editingRoute.startTime = timeStr;
+                    } else {
+                        appState.currentRoute.startTime = timeStr;
+                    }
                 } else if (element === 'end-time') {
-                    appState.currentRoute.endTime = timeStr;
+                    if (appState.editingRoute) {
+                        appState.editingRoute.endTime = timeStr;
+                    } else {
+                        appState.currentRoute.endTime = timeStr;
+                    }
                 }
             } else {
                 const clientBlock = element.closest('.client-block');
                 const index = Array.from(document.querySelectorAll('.client-block')).indexOf(clientBlock);
                 
                 if (type === 'arrival') {
-                    appState.currentRoute.clients[index].arrivalTime = timeStr;
+                    if (appState.editingRoute) {
+                        appState.editingRoute.clients[index].arrivalTime = timeStr;
+                    } else {
+                        appState.currentRoute.clients[index].arrivalTime = timeStr;
+                    }
                 } else {
-                    appState.currentRoute.clients[index].departureTime = timeStr;
+                    if (appState.editingRoute) {
+                        appState.editingRoute.clients[index].departureTime = timeStr;
+                    } else {
+                        appState.currentRoute.clients[index].departureTime = timeStr;
+                    }
                 }
             }
             
@@ -789,39 +927,48 @@
         function saveRoute() {
             // Collect all client data
             const clientBlocks = document.querySelectorAll('.client-block');
+            const route = appState.editingRoute || appState.currentRoute;
+            
             clientBlocks.forEach((block, index) => {
-                appState.currentRoute.clients[index].name = block.querySelector('.client-name').value;
-                appState.currentRoute.clients[index].address = block.querySelector('.client-address').value;
-                appState.currentRoute.clients[index].notes = block.querySelector('.service-notes').value;
-                appState.currentRoute.clients[index].arrivalTime = block.querySelector('.client-arrival-time').value;
-                appState.currentRoute.clients[index].departureTime = block.querySelector('.client-departure-time').value;
+                route.clients[index].name = block.querySelector('.client-name').value;
+                route.clients[index].address = block.querySelector('.client-address').value;
+                route.clients[index].notes = block.querySelector('.service-notes').value;
+                route.clients[index].arrivalTime = block.querySelector('.client-arrival-time').value;
+                route.clients[index].departureTime = block.querySelector('.client-departure-time').value;
             });
             
             // Update lunch break status
-            appState.currentRoute.lunchBreak = document.getElementById('lunch-toggle').checked;
+            route.lunchBreak = document.getElementById('lunch-toggle').checked;
             
             // Calculate worked hours
-            const start = parseTime(appState.currentRoute.startTime);
-            const end = parseTime(appState.currentRoute.endTime);
+            const start = parseTime(route.startTime);
+            const end = parseTime(route.endTime);
             let diff = (end - start + 1440) % 1440; // Handle overnight
             
             // Subtract 1 hour if lunch break was taken
-            if (appState.currentRoute.lunchBreak) {
+            if (route.lunchBreak) {
                 diff = Math.max(0, diff - 60);
             }
             
-            appState.currentRoute.workedHours = diff;
+            route.workedHours = diff;
             
-            // Check if route for this date already exists
-            const dateStr = appState.currentRoute.date.toDateString();
-            const existingIndex = appState.routes.findIndex(r => 
-                new Date(r.date).toDateString() === dateStr
-            );
-            
-            if (existingIndex >= 0) {
-                showReplaceModal(existingIndex);
+            if (appState.editingRoute) {
+                // Update existing route
+                localStorage.setItem('routes', JSON.stringify(appState.routes));
+                alert("Rota atualizada com sucesso!");
+                cancelEdit();
             } else {
-                addNewRoute();
+                // Check if route for this date already exists
+                const dateStr = route.date.toDateString();
+                const existingIndex = appState.routes.findIndex(r => 
+                    new Date(r.date).toDateString() === dateStr
+                );
+                
+                if (existingIndex >= 0) {
+                    showReplaceModal(existingIndex);
+                } else {
+                    addNewRoute();
+                }
             }
         }
         
@@ -868,7 +1015,16 @@
         
         // Reset current route
         function resetCurrentRoute() {
-            appState.currentRoute.clients = [];
+            appState.currentRoute = {
+                date: new Date(),
+                startTime: '08:00',
+                endTime: '17:00',
+                lunchBreak: false,
+                clients: [],
+                startAddress: '',
+                endAddress: '',
+                workedHours: 0
+            };
             document.getElementById('client-blocks').innerHTML = '';
             addClientBlock();
             document.getElementById('lunch-toggle').checked = false;
@@ -876,42 +1032,206 @@
             document.getElementById('end-time').value = '17:00';
             document.getElementById('start-address').textContent = '';
             document.getElementById('end-address').textContent = '';
-            appState.currentRoute.startTime = '08:00';
-            appState.currentRoute.endTime = '17:00';
-            appState.currentRoute.lunchBreak = false;
-            appState.currentRoute.startAddress = '';
-            appState.currentRoute.endAddress = '';
-            appState.currentRoute.workedHours = 0;
+            appState.editingRoute = null;
         }
         
         // Load history data
         function loadHistory() {
-            const historyList = document.getElementById('history-list');
-            historyList.innerHTML = '';
+            const historyDaySelect = document.getElementById('history-day-select');
+            historyDaySelect.innerHTML = '';
             
             if (appState.routes.length === 0) {
-                historyList.innerHTML = '<div class="no-history">Nenhuma rota registrada</div>';
+                historyDaySelect.innerHTML = '<option value="">Nenhuma rota registrada</option>';
+                document.getElementById('history-details-container').innerHTML = '<div class="no-history">Nenhuma rota registrada</div>';
                 return;
             }
             
             // Sort routes by date (newest first)
             const sortedRoutes = [...appState.routes].sort((a, b) => new Date(b.date) - new Date(a.date));
             
-            sortedRoutes.forEach(route => {
-                const dateStr = new Date(route.date).toLocaleDateString('pt-BR', {
-                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            // Get unique dates
+            const uniqueDates = [...new Set(sortedRoutes.map(route => 
+                new Date(route.date).toLocaleDateString('pt-BR')
+            ))];
+            
+            // Populate day selector
+            uniqueDates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                historyDaySelect.appendChild(option);
+            });
+            
+            // Show details for the first date
+            if (uniqueDates.length > 0) {
+                showHistoryDetails();
+            }
+        }
+        
+        // Show details for selected day in history
+        function showHistoryDetails() {
+            const selectedDate = document.getElementById('history-day-select').value;
+            const detailsContainer = document.getElementById('history-details-container');
+            
+            if (!selectedDate) {
+                detailsContainer.innerHTML = '<div class="no-history">Selecione uma data</div>';
+                return;
+            }
+            
+            const route = appState.routes.find(r => 
+                new Date(r.date).toLocaleDateString('pt-BR') === selectedDate
+            );
+            
+            if (!route) {
+                detailsContainer.innerHTML = '<div class="no-history">Nenhum dado para este dia</div>';
+                return;
+            }
+            
+            const dateStr = new Date(route.date).toLocaleDateString('pt-BR', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+            
+            const start = parseTime(route.startTime);
+            const end = parseTime(route.endTime);
+            let totalDiff = (end - start + 1440) % 1440;
+            const totalHours = Math.floor(totalDiff / 60);
+            const totalMins = totalDiff % 60;
+            
+            const workedHours = route.workedHours || totalDiff;
+            const workedH = Math.floor(workedHours / 60);
+            const workedM = workedHours % 60;
+            
+            let html = `
+                <div class="history-details">
+                    <div class="history-date-title">
+                        <div>${dateStr}</div>
+                        <button class="history-delete-btn" onclick="showDeleteConfirm('${new Date(route.date).toISOString()}')">Excluir</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div><strong>Início:</strong> ${route.startTime} - ${route.startAddress || 'Sem endereço'}</div>
+                        <div><strong>Fim:</strong> ${route.endTime} - ${route.endAddress || 'Sem endereço'}</div>
+                        <div><strong>Total de horas:</strong> ${totalHours}h ${totalMins.toString().padStart(2, '0')}m</div>
+                        <div><strong>Horas trabalhadas:</strong> ${workedH}h ${workedM.toString().padStart(2, '0')}m</div>
+                        <div><strong>Almoço:</strong> ${route.lunchBreak ? 'Sim' : 'Não'}</div>
+                    </div>
+            `;
+            
+            if (route.clients.length > 0) {
+                html += `<div style="margin-top: 15px;"><strong>Clientes atendidos:</strong></div>`;
+                
+                route.clients.forEach(client => {
+                    html += `
+                        <div class="history-client">
+                            <div class="history-client-name">${client.name || 'Cliente sem nome'}</div>
+                            <div class="history-client-info">${client.address || 'Sem endereço'}</div>
+                            <div class="history-checkpoint">
+                                <div class="history-checkpoint-time">Chegada: ${client.arrivalTime}</div>
+                                <div class="history-checkpoint-details">
+                                    <div class="history-checkpoint-address">${client.arrivalAddress || 'Sem endereço'}</div>
+                                </div>
+                            </div>
+                            <div class="history-checkpoint">
+                                <div class="history-checkpoint-time">Saída: ${client.departureTime}</div>
+                                <div class="history-checkpoint-details">
+                                    <div class="history-checkpoint-address">${client.departureAddress || 'Sem endereço'}</div>
+                                </div>
+                            </div>
+                            ${client.notes ? `<div class="history-client-notes">${client.notes}</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+            
+            html += `
+                    <button class="history-edit-btn" onclick="editRoute('${new Date(route.date).toISOString()}')">Editar</button>
+                </div>
+            `;
+            
+            detailsContainer.innerHTML = html;
+        }
+        
+        // Show delete confirmation modal
+        function showDeleteConfirm(dateString) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal">
+                    <div class="modal-title">Confirmar exclusão</div>
+                    <div class="modal-message">Tem certeza que deseja excluir esta rota?</div>
+                    <div class="modal-buttons">
+                        <button class="modal-button secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancelar</button>
+                        <button class="modal-button danger" onclick="deleteRoute('${dateString}', this.parentElement.parentElement.parentElement)">Excluir</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Delete route
+        function deleteRoute(dateString, modal) {
+            const date = new Date(dateString);
+            const index = appState.routes.findIndex(r => 
+                new Date(r.date).getTime() === date.getTime()
+            );
+            
+            if (index >= 0) {
+                appState.routes.splice(index, 1);
+                localStorage.setItem('routes', JSON.stringify(appState.routes));
+                modal.remove();
+                loadHistory();
+                alert("Rota excluída com sucesso!");
+            }
+        }
+        
+        // Edit route
+        function editRoute(dateString) {
+            const date = new Date(dateString);
+            const index = appState.routes.findIndex(r => 
+                new Date(r.date).getTime() === date.getTime()
+            );
+            
+            if (index >= 0) {
+                appState.editingRoute = appState.routes[index];
+                
+                // Clear current blocks
+                document.getElementById('client-blocks').innerHTML = '';
+                
+                // Set basic info
+                document.getElementById('start-time').value = appState.editingRoute.startTime;
+                document.getElementById('end-time').value = appState.editingRoute.endTime;
+                document.getElementById('lunch-toggle').checked = appState.editingRoute.lunchBreak;
+                document.getElementById('start-address').textContent = appState.editingRoute.startAddress || '';
+                document.getElementById('end-address').textContent = appState.editingRoute.endAddress || '';
+                
+                // Add client blocks
+                appState.editingRoute.clients.forEach(client => {
+                    const clientBlocks = document.getElementById('client-blocks');
+                    const newBlock = document.createElement('div');
+                    newBlock.innerHTML = clientBlockTemplate;
+                    clientBlocks.appendChild(newBlock);
+                    
+                    // Fill client data
+                    const lastBlock = clientBlocks.lastElementChild;
+                    lastBlock.querySelector('.client-name').value = client.name || '';
+                    lastBlock.querySelector('.client-address').value = client.address || '';
+                    lastBlock.querySelector('.service-notes').value = client.notes || '';
+                    lastBlock.querySelector('.client-arrival-time').value = client.arrivalTime || '10:00';
+                    lastBlock.querySelector('.client-departure-time').value = client.departureTime || '11:00';
+                    lastBlock.querySelector('.client-arrival-address').textContent = client.arrivalAddress || '';
+                    lastBlock.querySelector('.client-departure-address').textContent = client.departureAddress || '';
                 });
                 
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    <div class="history-date">${dateStr}</div>
-                    <div class="history-clients">${route.clients.length} cliente(s) atendido(s)</div>
-                    <div class="history-clients">${route.startTime} - ${route.endTime}</div>
-                    <div class="history-clients">${route.lunchBreak ? 'Com almoço' : 'Sem almoço'}</div>
-                `;
-                historyList.appendChild(historyItem);
-            });
+                // Switch to routes tab
+                showTab('routes');
+            }
+        }
+        
+        // Cancel edit mode
+        function cancelEdit() {
+            appState.editingRoute = null;
+            resetCurrentRoute();
+            showTab('history');
         }
         
         // Update hours tab with data
@@ -1005,13 +1325,7 @@
             // Update monthly table
             sortedRoutes.forEach(route => {
                 const dateStr = new Date(route.date).toLocaleDateString('pt-BR');
-                const start = parseTime(route.startTime);
-                const end = parseTime(route.endTime);
-                let diff = (end - start + 1440) % 1440; // Handle overnight
-                const hours = Math.floor(diff / 60);
-                const mins = diff % 60;
-                
-                const workedHours = route.workedHours || diff;
+                const workedHours = route.workedHours || 0;
                 const workedH = Math.floor(workedHours / 60);
                 const workedM = workedHours % 60;
                 
