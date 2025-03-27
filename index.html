@@ -543,6 +543,24 @@
             background-color: var(--red-color);
             color: white;
         }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -826,55 +844,33 @@
             }
         }
         
-        // Simulate GPS location
+        // Get GPS location and reverse geocode to get address
         function getGPSLocation(element, type = null) {
-            // This is a simulation - in a real app, you would use:
-            // navigator.geolocation.getCurrentPosition()
-            
-            let timeInput, addressElement;
+            let timeInput, addressElement, gpsButton;
             
             if (typeof element === 'string') {
                 // If element is an ID
                 timeInput = document.getElementById(element);
                 addressElement = document.getElementById(type);
-                
-                // Update app state
-                if (element === 'start-time') {
-                    if (appState.editingRoute) {
-                        appState.editingRoute.startAddress = "Localização via GPS";
-                    } else {
-                        appState.currentRoute.startAddress = "Localização via GPS";
-                    }
-                } else if (element === 'end-time') {
-                    if (appState.editingRoute) {
-                        appState.editingRoute.endAddress = "Localização via GPS";
-                    } else {
-                        appState.currentRoute.endAddress = "Localização via GPS";
-                    }
-                }
+                gpsButton = document.querySelector(`button[onclick="getGPSLocation('${element}', '${type}')"]`);
             } else {
                 // If element is a button
+                gpsButton = element;
                 const clientBlock = element.closest('.client-block');
-                const index = Array.from(document.querySelectorAll('.client-block')).indexOf(clientBlock);
                 
                 if (type === 'arrival') {
                     timeInput = clientBlock.querySelector('.client-arrival-time');
                     addressElement = clientBlock.querySelector('.client-arrival-address');
-                    if (appState.editingRoute) {
-                        appState.editingRoute.clients[index].arrivalAddress = "Localização via GPS";
-                    } else {
-                        appState.currentRoute.clients[index].arrivalAddress = "Localização via GPS";
-                    }
                 } else {
                     timeInput = clientBlock.querySelector('.client-departure-time');
                     addressElement = clientBlock.querySelector('.client-departure-address');
-                    if (appState.editingRoute) {
-                        appState.editingRoute.clients[index].departureAddress = "Localização via GPS";
-                    } else {
-                        appState.currentRoute.clients[index].departureAddress = "Localização via GPS";
-                    }
                 }
             }
+            
+            // Show loading spinner
+            const originalHTML = gpsButton.innerHTML;
+            gpsButton.innerHTML = '<div class="spinner"></div>';
+            gpsButton.disabled = true;
             
             // Set current time
             const now = new Date();
@@ -883,44 +879,135 @@
             const timeStr = `${hours}:${mins}`;
             timeInput.value = timeStr;
             
-            // Update app state
-            if (typeof element === 'string') {
-                if (element === 'start-time') {
-                    if (appState.editingRoute) {
-                        appState.editingRoute.startTime = timeStr;
-                    } else {
-                        appState.currentRoute.startTime = timeStr;
-                    }
-                } else if (element === 'end-time') {
-                    if (appState.editingRoute) {
-                        appState.editingRoute.endTime = timeStr;
-                    } else {
-                        appState.currentRoute.endTime = timeStr;
-                    }
-                }
-            } else {
-                const clientBlock = element.closest('.client-block');
-                const index = Array.from(document.querySelectorAll('.client-block')).indexOf(clientBlock);
-                
-                if (type === 'arrival') {
-                    if (appState.editingRoute) {
-                        appState.editingRoute.clients[index].arrivalTime = timeStr;
-                    } else {
-                        appState.currentRoute.clients[index].arrivalTime = timeStr;
-                    }
-                } else {
-                    if (appState.editingRoute) {
-                        appState.editingRoute.clients[index].departureTime = timeStr;
-                    } else {
-                        appState.currentRoute.clients[index].departureTime = timeStr;
-                    }
-                }
+            // Check if geolocation is available
+            if (!navigator.geolocation) {
+                addressElement.textContent = "Geolocalização não suportada pelo navegador";
+                gpsButton.innerHTML = originalHTML;
+                gpsButton.disabled = false;
+                return;
             }
             
-            // Simulate address
-            if (addressElement) {
-                addressElement.textContent = "Localização via GPS";
+            // Get current position
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    try {
+                        const { latitude, longitude } = position.coords;
+                        
+                        // Update app state with coordinates (we'll use them if geocoding fails)
+                        const coordsString = `Lat: ${latitude.toFixed(6)}, Long: ${longitude.toFixed(6)}`;
+                        
+                        // Try to get address using Google Maps Geocoding API
+                        const address = await reverseGeocode(latitude, longitude);
+                        
+                        // Update UI
+                        addressElement.textContent = address || coordsString;
+                        
+                        // Update app state
+                        if (typeof element === 'string') {
+                            if (element === 'start-time') {
+                                if (appState.editingRoute) {
+                                    appState.editingRoute.startTime = timeStr;
+                                    appState.editingRoute.startAddress = address || coordsString;
+                                } else {
+                                    appState.currentRoute.startTime = timeStr;
+                                    appState.currentRoute.startAddress = address || coordsString;
+                                }
+                            } else if (element === 'end-time') {
+                                if (appState.editingRoute) {
+                                    appState.editingRoute.endTime = timeStr;
+                                    appState.editingRoute.endAddress = address || coordsString;
+                                } else {
+                                    appState.currentRoute.endTime = timeStr;
+                                    appState.currentRoute.endAddress = address || coordsString;
+                                }
+                            }
+                        } else {
+                            const clientBlock = element.closest('.client-block');
+                            const index = Array.from(document.querySelectorAll('.client-block')).indexOf(clientBlock);
+                            
+                            if (type === 'arrival') {
+                                if (appState.editingRoute) {
+                                    appState.editingRoute.clients[index].arrivalTime = timeStr;
+                                    appState.editingRoute.clients[index].arrivalAddress = address || coordsString;
+                                } else {
+                                    appState.currentRoute.clients[index].arrivalTime = timeStr;
+                                    appState.currentRoute.clients[index].arrivalAddress = address || coordsString;
+                                }
+                            } else {
+                                if (appState.editingRoute) {
+                                    appState.editingRoute.clients[index].departureTime = timeStr;
+                                    appState.editingRoute.clients[index].departureAddress = address || coordsString;
+                                } else {
+                                    appState.currentRoute.clients[index].departureTime = timeStr;
+                                    appState.currentRoute.clients[index].departureAddress = address || coordsString;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Geocoding error:", error);
+                        addressElement.textContent = "Erro ao obter endereço";
+                    } finally {
+                        gpsButton.innerHTML = originalHTML;
+                        gpsButton.disabled = false;
+                    }
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    let errorMessage = "Erro ao obter localização";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = "Permissão negada pelo usuário";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = "Localização indisponível";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = "Tempo de espera excedido";
+                            break;
+                    }
+                    addressElement.textContent = errorMessage;
+                    gpsButton.innerHTML = originalHTML;
+                    gpsButton.disabled = false;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        // Reverse geocode coordinates to get address using Google Maps API
+        async function reverseGeocode(latitude, longitude) {
+            // In a production app, you would use the Google Maps Geocoding API
+            // This is a simulation that returns a mock address based on coordinates
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Mock addresses based on approximate coordinates
+            if (latitude > -23.55 && latitude < -23.53 && longitude > -46.64 && longitude < -46.62) {
+                return "Av. Paulista, 1000 - Bela Vista, São Paulo - SP";
+            } else if (latitude > -22.91 && latitude < -22.90 && longitude > -43.18 && longitude < -43.17) {
+                return "Av. Rio Branco, 1 - Centro, Rio de Janeiro - RJ";
+            } else if (latitude > -15.80 && latitude < -15.78 && longitude > -47.90 && longitude < -47.88) {
+                return "Esplanada dos Ministérios - Brasília - DF";
+            } else {
+                // Fallback to coordinates if no mock address matches
+                return `Lat: ${latitude.toFixed(6)}, Long: ${longitude.toFixed(6)}`;
             }
+            
+            // In a real implementation, you would use:
+            /*
+            const apiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
+            const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`);
+            const data = await response.json();
+            
+            if (data.status === 'OK' && data.results.length > 0) {
+                return data.results[0].formatted_address;
+            }
+            return null;
+            */
         }
         
         // Save route data with date check
