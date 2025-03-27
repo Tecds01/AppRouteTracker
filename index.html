@@ -15,6 +15,7 @@
             --text-color: #1C1C1E;
             --secondary-text: #8E8E93;
             --border-color: #D1D1D6;
+            --gps-color: #000000;
         }
         
         * {
@@ -102,7 +103,7 @@
         }
         
         .checkpoint-time {
-            min-width: 70px;
+            min-width: 90px;
             font-weight: 500;
             padding-top: 2px;
         }
@@ -112,7 +113,7 @@
             border-radius: 4px;
             padding: 6px 8px;
             font-size: 14px;
-            width: 70px;
+            width: 100%;
         }
         
         .checkpoint-details {
@@ -129,17 +130,26 @@
             color: var(--secondary-text);
             font-size: 13px;
             line-height: 1.4;
+            margin-top: 5px;
         }
         
         .gps-btn {
-            background-color: var(--secondary-color);
-            color: white;
+            background-color: transparent;
+            color: var(--gps-color);
             border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 12px;
+            font-size: 18px;
             margin-left: 5px;
             cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .gps-btn::after {
+            content: "📍";
         }
         
         .client-info-block {
@@ -360,6 +370,30 @@
         .hidden {
             display: none;
         }
+        
+        /* Histórico Tab Styles */
+        .history-item {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .history-date {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .history-clients {
+            font-size: 14px;
+            color: var(--secondary-text);
+        }
+        
+        .no-history {
+            text-align: center;
+            color: var(--secondary-text);
+            padding: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -384,9 +418,10 @@
                     <input type="time" id="start-time" value="08:00">
                 </div>
                 <div class="checkpoint-details">
-                    <div class="checkpoint-type">Início</div>
-                    <div class="checkpoint-address" id="start-address">Endereço de início</div>
-                    <button class="gps-btn" onclick="getGPSLocation('start-time', 'start-address')">GPS</button>
+                    <div class="checkpoint-type">Início
+                        <button class="gps-btn" onclick="getGPSLocation('start-time', 'start-address')"></button>
+                    </div>
+                    <div class="checkpoint-address" id="start-address"></div>
                 </div>
             </div>
             
@@ -401,9 +436,10 @@
                     <input type="time" id="end-time" value="17:00">
                 </div>
                 <div class="checkpoint-details">
-                    <div class="checkpoint-type">Fim</div>
-                    <div class="checkpoint-address" id="end-address">Endereço de término</div>
-                    <button class="gps-btn" onclick="getGPSLocation('end-time', 'end-address')">GPS</button>
+                    <div class="checkpoint-type">Fim
+                        <button class="gps-btn" onclick="getGPSLocation('end-time', 'end-address')"></button>
+                    </div>
+                    <div class="checkpoint-address" id="end-address"></div>
                 </div>
             </div>
         </div>
@@ -426,45 +462,23 @@
         <div class="day-selector">
             <label>Selecione o dia:</label>
             <select id="day-select">
-                <option value="27/03/2025" selected>27/03/2025</option>
-                <option value="26/03/2025">26/03/2025</option>
-                <option value="25/03/2025">25/03/2025</option>
+                <!-- Options will be populated dynamically -->
             </select>
         </div>
         
-        <div class="day-summary">
-            <div>Total de horas do dia</div>
-            <div class="day-total" id="day-total-hours">8h 30m</div>
-            <div class="lunch-status" id="lunch-status">Com pausa para almoço</div>
+        <div id="day-summary-container">
+            <!-- Day summary will be populated dynamically -->
         </div>
         
-        <div class="section">
-            <div class="section-title">Estatísticas</div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value">15</div>
-                    <div class="stat-label">Dias trabalhados</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">3</div>
-                    <div class="stat-label">Dias sem almoço</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">7h 45m</div>
-                    <div class="stat-label">Média por dia</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">24</div>
-                    <div class="stat-label">Clientes atendidos</div>
-                </div>
-            </div>
+        <div id="stats-container">
+            <!-- Statistics will be populated dynamically -->
         </div>
         
         <div class="monthly-summary">
             <div class="section-title">Total Mensal</div>
-            <div class="day-total">116h 15m</div>
+            <div class="day-total" id="monthly-total">0h 00m</div>
             
-            <table class="summary-table">
+            <table class="summary-table" id="monthly-table">
                 <thead>
                     <tr>
                         <th>Data</th>
@@ -473,21 +487,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>27/03/2025</td>
-                        <td>8h 30m</td>
-                        <td>Sim</td>
-                    </tr>
-                    <tr>
-                        <td>26/03/2025</td>
-                        <td>7h 15m</td>
-                        <td>Não</td>
-                    </tr>
-                    <tr>
-                        <td>25/03/2025</td>
-                        <td>8h 00m</td>
-                        <td>Sim</td>
-                    </tr>
+                    <!-- Data will be populated dynamically -->
                 </tbody>
             </table>
         </div>
@@ -497,11 +497,27 @@
     <div id="history-tab" class="container hidden">
         <div class="section">
             <div class="section-title">Histórico de Rotas</div>
-            <p style="text-align: center; color: var(--secondary-text);">Nenhuma rota encontrada</p>
+            <div id="history-list">
+                <!-- History items will be populated dynamically -->
+            </div>
         </div>
     </div>
     
     <script>
+        // App state
+        const appState = {
+            routes: JSON.parse(localStorage.getItem('routes')) || [],
+            currentRoute: {
+                date: new Date(),
+                startTime: '08:00',
+                endTime: '17:00',
+                lunchBreak: false,
+                clients: [],
+                startAddress: '',
+                endAddress: ''
+            }
+        };
+        
         // Client block template
         const clientBlockTemplate = `
         <div class="client-block">
@@ -510,9 +526,10 @@
                     <input type="time" class="client-arrival-time" value="10:00">
                 </div>
                 <div class="checkpoint-details">
-                    <div class="checkpoint-type">Chegada no Cliente</div>
-                    <div class="checkpoint-address client-arrival-address">Endereço do cliente</div>
-                    <button class="gps-btn" onclick="getGPSLocation(this)">GPS</button>
+                    <div class="checkpoint-type">Chegada no Cliente
+                        <button class="gps-btn" onclick="getGPSLocation(this, 'arrival')"></button>
+                    </div>
+                    <div class="checkpoint-address client-arrival-address"></div>
                 </div>
             </div>
             
@@ -537,9 +554,10 @@
                     <input type="time" class="client-departure-time" value="11:00">
                 </div>
                 <div class="checkpoint-details">
-                    <div class="checkpoint-type">Saída do Cliente</div>
-                    <div class="checkpoint-address client-departure-address">Endereço do cliente</div>
-                    <button class="gps-btn" onclick="getGPSLocation(this)">GPS</button>
+                    <div class="checkpoint-type">Saída do Cliente
+                        <button class="gps-btn" onclick="getGPSLocation(this, 'departure')"></button>
+                    </div>
+                    <div class="checkpoint-address client-departure-address"></div>
                 </div>
             </div>
         </div>
@@ -562,11 +580,25 @@
             // Add event listeners
             document.getElementById('add-client-btn').addEventListener('click', addClientBlock);
             document.getElementById('save-btn').addEventListener('click', saveRoute);
-            document.getElementById('lunch-toggle').addEventListener('change', updateLunchStatus);
+            document.getElementById('lunch-toggle').addEventListener('change', function() {
+                appState.currentRoute.lunchBreak = this.checked;
+            });
             document.getElementById('day-select').addEventListener('change', updateDaySummary);
+            
+            // Initialize time inputs
+            document.getElementById('start-time').addEventListener('change', function() {
+                appState.currentRoute.startTime = this.value;
+            });
+            
+            document.getElementById('end-time').addEventListener('change', function() {
+                appState.currentRoute.endTime = this.value;
+            });
             
             // Update current date
             updateCurrentDate();
+            
+            // Load history
+            loadHistory();
         });
         
         // Show/hide tabs
@@ -587,6 +619,16 @@
             if (event && event.currentTarget) {
                 event.currentTarget.classList.add('active');
             }
+            
+            // If showing hours tab, update data
+            if (tabName === 'hours') {
+                updateHoursTab();
+            }
+            
+            // If showing history tab, refresh list
+            if (tabName === 'history') {
+                loadHistory();
+            }
         }
         
         // Add a new client block
@@ -595,20 +637,34 @@
             const newBlock = document.createElement('div');
             newBlock.innerHTML = clientBlockTemplate;
             clientBlocks.appendChild(newBlock);
+            
+            // Add to current route
+            appState.currentRoute.clients.push({
+                arrivalTime: '10:00',
+                departureTime: '11:00',
+                name: '',
+                address: '',
+                notes: '',
+                arrivalAddress: '',
+                departureAddress: ''
+            });
         }
         
         // Remove a client block
         function removeClientBlock(button) {
             const clientBlock = button.closest('.client-block');
+            const index = Array.from(document.querySelectorAll('.client-block')).indexOf(clientBlock);
+            
             if (document.querySelectorAll('.client-block').length > 1) {
                 clientBlock.remove();
+                appState.currentRoute.clients.splice(index, 1);
             } else {
                 alert("Você precisa ter pelo menos um cliente cadastrado.");
             }
         }
         
         // Simulate GPS location
-        function getGPSLocation(element, addressId = null) {
+        function getGPSLocation(element, type = null) {
             // This is a simulation - in a real app, you would use:
             // navigator.geolocation.getCurrentPosition()
             
@@ -617,53 +673,254 @@
             if (typeof element === 'string') {
                 // If element is an ID
                 timeInput = document.getElementById(element);
-                addressElement = document.getElementById(addressId);
+                addressElement = document.getElementById(type);
+                
+                // Update app state
+                if (element === 'start-time') {
+                    appState.currentRoute.startAddress = "Localização via GPS";
+                } else if (element === 'end-time') {
+                    appState.currentRoute.endAddress = "Localização via GPS";
+                }
             } else {
                 // If element is a button
-                timeInput = element.closest('.checkpoint').querySelector('input[type="time"]');
-                addressElement = element.closest('.checkpoint').querySelector('.checkpoint-address');
+                const clientBlock = element.closest('.client-block');
+                const index = Array.from(document.querySelectorAll('.client-block')).indexOf(clientBlock);
+                
+                if (type === 'arrival') {
+                    timeInput = clientBlock.querySelector('.client-arrival-time');
+                    addressElement = clientBlock.querySelector('.client-arrival-address');
+                    appState.currentRoute.clients[index].arrivalAddress = "Localização via GPS";
+                } else {
+                    timeInput = clientBlock.querySelector('.client-departure-time');
+                    addressElement = clientBlock.querySelector('.client-departure-address');
+                    appState.currentRoute.clients[index].departureAddress = "Localização via GPS";
+                }
             }
             
             // Set current time
             const now = new Date();
             const hours = now.getHours().toString().padStart(2, '0');
             const mins = now.getMinutes().toString().padStart(2, '0');
-            timeInput.value = `${hours}:${mins}`;
+            const timeStr = `${hours}:${mins}`;
+            timeInput.value = timeStr;
+            
+            // Update app state
+            if (typeof element === 'string') {
+                if (element === 'start-time') {
+                    appState.currentRoute.startTime = timeStr;
+                } else if (element === 'end-time') {
+                    appState.currentRoute.endTime = timeStr;
+                }
+            } else {
+                const clientBlock = element.closest('.client-block');
+                const index = Array.from(document.querySelectorAll('.client-block')).indexOf(clientBlock);
+                
+                if (type === 'arrival') {
+                    appState.currentRoute.clients[index].arrivalTime = timeStr;
+                } else {
+                    appState.currentRoute.clients[index].departureTime = timeStr;
+                }
+            }
             
             // Simulate address
             if (addressElement) {
-                addressElement.textContent = "Localização obtida via GPS";
+                addressElement.textContent = "Localização via GPS";
             }
-            
-            alert("Localização obtida via GPS e hora definida para agora.");
         }
         
-        // Update lunch status display
-        function updateLunchStatus() {
-            const lunchToggle = document.getElementById('lunch-toggle');
-            const lunchStatus = document.getElementById('lunch-status');
+        // Save route data
+        function saveRoute() {
+            // Collect all client data
+            const clientBlocks = document.querySelectorAll('.client-block');
+            clientBlocks.forEach((block, index) => {
+                appState.currentRoute.clients[index].name = block.querySelector('.client-name').value;
+                appState.currentRoute.clients[index].address = block.querySelector('.client-address').value;
+                appState.currentRoute.clients[index].notes = block.querySelector('.service-notes').value;
+                appState.currentRoute.clients[index].arrivalTime = block.querySelector('.client-arrival-time').value;
+                appState.currentRoute.clients[index].departureTime = block.querySelector('.client-departure-time').value;
+            });
             
-            if (lunchToggle.checked) {
-                lunchStatus.textContent = "Com pausa para almoço";
-            } else {
-                lunchStatus.textContent = "Sem pausa para almoço";
+            // Update lunch break status
+            appState.currentRoute.lunchBreak = document.getElementById('lunch-toggle').checked;
+            
+            // Add to routes
+            appState.routes.push({...appState.currentRoute});
+            
+            // Save to localStorage
+            localStorage.setItem('routes', JSON.stringify(appState.routes));
+            
+            // Reset current route
+            appState.currentRoute.clients = [];
+            document.getElementById('client-blocks').innerHTML = '';
+            addClientBlock();
+            document.getElementById('lunch-toggle').checked = false;
+            
+            alert("Rota salva com sucesso!");
+            loadHistory();
+        }
+        
+        // Load history data
+        function loadHistory() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            if (appState.routes.length === 0) {
+                historyList.innerHTML = '<div class="no-history">Nenhuma rota registrada</div>';
+                return;
             }
+            
+            appState.routes.forEach(route => {
+                const dateStr = new Date(route.date).toLocaleDateString('pt-BR', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+                
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-date">${dateStr}</div>
+                    <div class="history-clients">${route.clients.length} cliente(s) atendido(s)</div>
+                    <div class="history-clients">${route.startTime} - ${route.endTime}</div>
+                    <div class="history-clients">${route.lunchBreak ? 'Com almoço' : 'Sem almoço'}</div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Update hours tab with data
+        function updateHoursTab() {
+            const daySelect = document.getElementById('day-select');
+            const daySummaryContainer = document.getElementById('day-summary-container');
+            const statsContainer = document.getElementById('stats-container');
+            const monthlyTable = document.getElementById('monthly-table').querySelector('tbody');
+            
+            // Clear existing data
+            daySelect.innerHTML = '';
+            monthlyTable.innerHTML = '';
+            
+            if (appState.routes.length === 0) {
+                daySummaryContainer.innerHTML = '<div class="no-history">Nenhuma rota registrada</div>';
+                statsContainer.innerHTML = '';
+                document.getElementById('monthly-total').textContent = '0h 00m';
+                return;
+            }
+            
+            // Populate day selector
+            const uniqueDates = [...new Set(appState.routes.map(route => 
+                new Date(route.date).toLocaleDateString('pt-BR')
+            ))];
+            
+            uniqueDates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                daySelect.appendChild(option);
+            });
+            
+            // Calculate statistics
+            const daysWorked = uniqueDates.length;
+            const daysWithoutLunch = appState.routes.filter(route => !route.lunchBreak).length;
+            const totalClients = appState.routes.reduce((sum, route) => sum + route.clients.length, 0);
+            
+            // Calculate total hours
+            let totalMinutes = 0;
+            appState.routes.forEach(route => {
+                const start = parseTime(route.startTime);
+                const end = parseTime(route.endTime);
+                let diff = (end - start + 1440) % 1440; // Handle overnight
+                if (route.lunchBreak) diff = Math.max(0, diff - 60); // Subtract lunch
+                totalMinutes += diff;
+            });
+            
+            const avgMinutes = Math.round(totalMinutes / daysWorked);
+            const avgHours = Math.floor(avgMinutes / 60);
+            const avgMins = avgMinutes % 60;
+            
+            // Update stats
+            statsContainer.innerHTML = `
+                <div class="section">
+                    <div class="section-title">Estatísticas</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${daysWorked}</div>
+                            <div class="stat-label">Dias trabalhados</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${daysWithoutLunch}</div>
+                            <div class="stat-label">Dias sem almoço</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${avgHours}h ${avgMins.toString().padStart(2, '0')}m</div>
+                            <div class="stat-label">Média por dia</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${totalClients}</div>
+                            <div class="stat-label">Clientes atendidos</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Update monthly table
+            appState.routes.forEach(route => {
+                const dateStr = new Date(route.date).toLocaleDateString('pt-BR');
+                const start = parseTime(route.startTime);
+                const end = parseTime(route.endTime);
+                let diff = (end - start + 1440) % 1440; // Handle overnight
+                const hours = Math.floor(diff / 60);
+                const mins = diff % 60;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${dateStr}</td>
+                    <td>${hours}h ${mins.toString().padStart(2, '0')}m</td>
+                    <td>${route.lunchBreak ? 'Sim' : 'Não'}</td>
+                `;
+                monthlyTable.appendChild(row);
+            });
+            
+            // Update monthly total
+            const totalHours = Math.floor(totalMinutes / 60);
+            const totalMins = totalMinutes % 60;
+            document.getElementById('monthly-total').textContent = `${totalHours}h ${totalMins.toString().padStart(2, '0')}m`;
+            
+            // Update day summary
+            updateDaySummary();
         }
         
         // Update day summary when day is selected
         function updateDaySummary() {
             const daySelect = document.getElementById('day-select');
-            const selectedDay = daySelect.value;
+            const selectedDate = daySelect.value;
+            const daySummaryContainer = document.getElementById('day-summary-container');
             
-            // In a real app, you would fetch data for the selected day
-            document.getElementById('day-total-hours').textContent = "8h 30m";
-            document.getElementById('lunch-status').textContent = "Com pausa para almoço";
+            const route = appState.routes.find(r => 
+                new Date(r.date).toLocaleDateString('pt-BR') === selectedDate
+            );
+            
+            if (!route) {
+                daySummaryContainer.innerHTML = '<div class="no-history">Nenhum dado para este dia</div>';
+                return;
+            }
+            
+            const start = parseTime(route.startTime);
+            const end = parseTime(route.endTime);
+            let diff = (end - start + 1440) % 1440; // Handle overnight
+            const hours = Math.floor(diff / 60);
+            const mins = diff % 60;
+            
+            daySummaryContainer.innerHTML = `
+                <div class="day-summary">
+                    <div>Total de horas do dia</div>
+                    <div class="day-total">${hours}h ${mins.toString().padStart(2, '0')}m</div>
+                    <div class="lunch-status">${route.lunchBreak ? 'Com pausa para almoço' : 'Sem pausa para almoço'}</div>
+                </div>
+            `;
         }
         
-        // Save route data
-        function saveRoute() {
-            // In a real app, this would save to localStorage or a backend
-            alert("Rota salva com sucesso!");
+        // Helper function to parse time string to minutes
+        function parseTime(timeStr) {
+            const [hours, mins] = timeStr.split(':').map(Number);
+            return hours * 60 + mins;
         }
         
         // Update current date display
@@ -672,6 +929,7 @@
             const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
             const dateStr = now.toLocaleDateString('pt-BR', options);
             document.querySelector('.date-display').textContent = dateStr;
+            appState.currentRoute.date = now;
         }
     </script>
 </body>
