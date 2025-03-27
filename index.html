@@ -394,6 +394,62 @@
             color: var(--secondary-text);
             padding: 20px 0;
         }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .modal {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            width: 90%;
+            max-width: 350px;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .modal-message {
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .modal-button.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .modal-button.secondary {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
     </style>
 </head>
 <body>
@@ -514,7 +570,8 @@
                 lunchBreak: false,
                 clients: [],
                 startAddress: '',
-                endAddress: ''
+                endAddress: '',
+                workedHours: 0
             }
         };
         
@@ -728,7 +785,7 @@
             }
         }
         
-        // Save route data
+        // Save route data with date check
         function saveRoute() {
             // Collect all client data
             const clientBlocks = document.querySelectorAll('.client-block');
@@ -743,20 +800,88 @@
             // Update lunch break status
             appState.currentRoute.lunchBreak = document.getElementById('lunch-toggle').checked;
             
-            // Add to routes
+            // Calculate worked hours
+            const start = parseTime(appState.currentRoute.startTime);
+            const end = parseTime(appState.currentRoute.endTime);
+            let diff = (end - start + 1440) % 1440; // Handle overnight
+            
+            // Subtract 1 hour if lunch break was taken
+            if (appState.currentRoute.lunchBreak) {
+                diff = Math.max(0, diff - 60);
+            }
+            
+            appState.currentRoute.workedHours = diff;
+            
+            // Check if route for this date already exists
+            const dateStr = appState.currentRoute.date.toDateString();
+            const existingIndex = appState.routes.findIndex(r => 
+                new Date(r.date).toDateString() === dateStr
+            );
+            
+            if (existingIndex >= 0) {
+                showReplaceModal(existingIndex);
+            } else {
+                addNewRoute();
+            }
+        }
+        
+        // Show modal to replace or discard
+        function showReplaceModal(existingIndex) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal">
+                    <div class="modal-title">Rota já existente</div>
+                    <div class="modal-message">Já existe uma rota salva para esta data. Deseja substituir?</div>
+                    <div class="modal-buttons">
+                        <button class="modal-button secondary" onclick="discardRoute(this.parentElement.parentElement.parentElement)">Cancelar</button>
+                        <button class="modal-button primary" onclick="replaceRoute(${existingIndex}, this.parentElement.parentElement.parentElement)">Substituir</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Add new route
+        function addNewRoute() {
             appState.routes.push({...appState.currentRoute});
-            
-            // Save to localStorage
             localStorage.setItem('routes', JSON.stringify(appState.routes));
-            
-            // Reset current route
+            resetCurrentRoute();
+            alert("Rota salva com sucesso!");
+            loadHistory();
+        }
+        
+        // Replace existing route
+        function replaceRoute(index, modal) {
+            appState.routes[index] = {...appState.currentRoute};
+            localStorage.setItem('routes', JSON.stringify(appState.routes));
+            resetCurrentRoute();
+            modal.remove();
+            alert("Rota substituída com sucesso!");
+            loadHistory();
+        }
+        
+        // Discard changes
+        function discardRoute(modal) {
+            modal.remove();
+        }
+        
+        // Reset current route
+        function resetCurrentRoute() {
             appState.currentRoute.clients = [];
             document.getElementById('client-blocks').innerHTML = '';
             addClientBlock();
             document.getElementById('lunch-toggle').checked = false;
-            
-            alert("Rota salva com sucesso!");
-            loadHistory();
+            document.getElementById('start-time').value = '08:00';
+            document.getElementById('end-time').value = '17:00';
+            document.getElementById('start-address').textContent = '';
+            document.getElementById('end-address').textContent = '';
+            appState.currentRoute.startTime = '08:00';
+            appState.currentRoute.endTime = '17:00';
+            appState.currentRoute.lunchBreak = false;
+            appState.currentRoute.startAddress = '';
+            appState.currentRoute.endAddress = '';
+            appState.currentRoute.workedHours = 0;
         }
         
         // Load history data
@@ -769,7 +894,10 @@
                 return;
             }
             
-            appState.routes.forEach(route => {
+            // Sort routes by date (newest first)
+            const sortedRoutes = [...appState.routes].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedRoutes.forEach(route => {
                 const dateStr = new Date(route.date).toLocaleDateString('pt-BR', {
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
                 });
@@ -804,11 +932,15 @@
                 return;
             }
             
-            // Populate day selector
-            const uniqueDates = [...new Set(appState.routes.map(route => 
+            // Sort routes by date (newest first)
+            const sortedRoutes = [...appState.routes].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Get unique dates
+            const uniqueDates = [...new Set(sortedRoutes.map(route => 
                 new Date(route.date).toLocaleDateString('pt-BR')
             ))];
             
+            // Populate day selector
             uniqueDates.forEach(date => {
                 const option = document.createElement('option');
                 option.value = date;
@@ -818,50 +950,60 @@
             
             // Calculate statistics
             const daysWorked = uniqueDates.length;
-            const daysWithoutLunch = appState.routes.filter(route => !route.lunchBreak).length;
-            const totalClients = appState.routes.reduce((sum, route) => sum + route.clients.length, 0);
+            const daysWithoutLunch = sortedRoutes.filter(route => !route.lunchBreak).length;
+            const totalClients = sortedRoutes.reduce((sum, route) => sum + route.clients.length, 0);
             
             // Calculate total hours
             let totalMinutes = 0;
-            appState.routes.forEach(route => {
-                const start = parseTime(route.startTime);
-                const end = parseTime(route.endTime);
-                let diff = (end - start + 1440) % 1440; // Handle overnight
-                if (route.lunchBreak) diff = Math.max(0, diff - 60); // Subtract lunch
-                totalMinutes += diff;
+            sortedRoutes.forEach(route => {
+                totalMinutes += route.workedHours || 0;
             });
             
             const avgMinutes = Math.round(totalMinutes / daysWorked);
             const avgHours = Math.floor(avgMinutes / 60);
             const avgMins = avgMinutes % 60;
             
-            // Update stats
-            statsContainer.innerHTML = `
-                <div class="section">
-                    <div class="section-title">Estatísticas</div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value">${daysWorked}</div>
-                            <div class="stat-label">Dias trabalhados</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${daysWithoutLunch}</div>
-                            <div class="stat-label">Dias sem almoço</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${avgHours}h ${avgMins.toString().padStart(2, '0')}m</div>
-                            <div class="stat-label">Média por dia</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${totalClients}</div>
-                            <div class="stat-label">Clientes atendidos</div>
+            // Total hours (including lunch breaks)
+            let totalRawMinutes = sortedRoutes.reduce((sum, route) => {
+                const start = parseTime(route.startTime);
+                const end = parseTime(route.endTime);
+                return sum + ((end - start + 1440) % 1440);
+            }, 0);
+            
+            const totalRawHours = Math.floor(totalRawMinutes / 60);
+            const totalRawMins = totalRawMinutes % 60;
+            
+            // Update stats if we have data
+            if (daysWorked > 0) {
+                statsContainer.innerHTML = `
+                    <div class="section">
+                        <div class="section-title">Estatísticas</div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value">${daysWorked}</div>
+                                <div class="stat-label">Dias trabalhados</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${daysWithoutLunch}</div>
+                                <div class="stat-label">Dias sem almoço</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${avgHours}h ${avgMins.toString().padStart(2, '0')}m</div>
+                                <div class="stat-label">Média por dia</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${totalClients}</div>
+                                <div class="stat-label">Clientes atendidos</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                statsContainer.innerHTML = '';
+            }
             
             // Update monthly table
-            appState.routes.forEach(route => {
+            sortedRoutes.forEach(route => {
                 const dateStr = new Date(route.date).toLocaleDateString('pt-BR');
                 const start = parseTime(route.startTime);
                 const end = parseTime(route.endTime);
@@ -869,19 +1011,21 @@
                 const hours = Math.floor(diff / 60);
                 const mins = diff % 60;
                 
+                const workedHours = route.workedHours || diff;
+                const workedH = Math.floor(workedHours / 60);
+                const workedM = workedHours % 60;
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${dateStr}</td>
-                    <td>${hours}h ${mins.toString().padStart(2, '0')}m</td>
+                    <td>${workedH}h ${workedM.toString().padStart(2, '0')}m</td>
                     <td>${route.lunchBreak ? 'Sim' : 'Não'}</td>
                 `;
                 monthlyTable.appendChild(row);
             });
             
             // Update monthly total
-            const totalHours = Math.floor(totalMinutes / 60);
-            const totalMins = totalMinutes % 60;
-            document.getElementById('monthly-total').textContent = `${totalHours}h ${totalMins.toString().padStart(2, '0')}m`;
+            document.getElementById('monthly-total').textContent = `${totalRawHours}h ${totalRawMins.toString().padStart(2, '0')}m`;
             
             // Update day summary
             updateDaySummary();
@@ -904,15 +1048,21 @@
             
             const start = parseTime(route.startTime);
             const end = parseTime(route.endTime);
-            let diff = (end - start + 1440) % 1440; // Handle overnight
-            const hours = Math.floor(diff / 60);
-            const mins = diff % 60;
+            let totalDiff = (end - start + 1440) % 1440;
+            const totalHours = Math.floor(totalDiff / 60);
+            const totalMins = totalDiff % 60;
+            
+            // Worked hours already accounts for lunch break
+            const workedHours = route.workedHours || totalDiff;
+            const workedH = Math.floor(workedHours / 60);
+            const workedM = workedHours % 60;
             
             daySummaryContainer.innerHTML = `
                 <div class="day-summary">
                     <div>Total de horas do dia</div>
-                    <div class="day-total">${hours}h ${mins.toString().padStart(2, '0')}m</div>
-                    <div class="lunch-status">${route.lunchBreak ? 'Com pausa para almoço' : 'Sem pausa para almoço'}</div>
+                    <div class="day-total">${totalHours}h ${totalMins.toString().padStart(2, '0')}m</div>
+                    <div class="lunch-status">${route.lunchBreak ? 'Com pausa para almoço (-1h)' : 'Sem pausa para almoço'}</div>
+                    <div style="margin-top: 10px;">Horas trabalhadas: ${workedH}h ${workedM.toString().padStart(2, '0')}m</div>
                 </div>
             `;
         }
