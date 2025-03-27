@@ -8,10 +8,13 @@
         :root {
             --primary-color: #007AFF;
             --secondary-color: #34C759;
+            --orange-color: #FF9500;
+            --red-color: #FF3B30;
             --background-color: #F2F2F7;
             --card-color: #FFFFFF;
             --text-color: #1C1C1E;
             --secondary-text: #8E8E93;
+            --border-color: #D1D1D6;
         }
         
         * {
@@ -36,244 +39,80 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-bottom: 1px solid var(--border-color);
         }
         
         h1 {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 600;
+            margin: 0;
+        }
+        
+        .date-display {
+            font-size: 14px;
+            color: var(--secondary-text);
+            margin-top: 4px;
         }
         
         .tabs {
             display: flex;
             background-color: var(--card-color);
-            margin-bottom: 10px;
             position: sticky;
             top: 60px;
             z-index: 9;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .tab {
             flex: 1;
             text-align: center;
-            padding: 15px 0;
-            font-size: 16px;
+            padding: 12px 0;
+            font-size: 14px;
             color: var(--secondary-text);
-            border-bottom: 2px solid transparent;
-            cursor: pointer;
-            user-select: none;
+            font-weight: 500;
         }
         
         .tab.active {
             color: var(--primary-color);
             border-bottom: 2px solid var(--primary-color);
-            font-weight: 500;
         }
         
         .container {
             padding: 15px;
         }
         
-        .card {
-            background-color: var(--card-color);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .card-title {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-        
-        .calendar {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .calendar th {
-            font-size: 14px;
-            font-weight: 400;
-            color: var(--secondary-text);
-            padding: 5px;
-        }
-        
-        .calendar td {
-            text-align: center;
-            padding: 8px 5px;
-            font-size: 16px;
-        }
-        
-        .calendar .current-day {
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #D1D1D6;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 15px;
-            -webkit-appearance: none;
-        }
-        
-        .time-input {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .time-input label {
-            flex: 1;
-            font-size: 16px;
-        }
-        
-        .time-input input {
-            padding: 8px 12px;
-            border: 1px solid #D1D1D6;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 80px;
-            text-align: center;
-            -webkit-appearance: none;
-        }
-        
-        .time-input button {
-            margin-left: 10px;
-            padding: 8px 12px;
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        .client-info {
+        .section {
             margin-bottom: 20px;
-            border: 1px solid #D1D1D6;
-            border-radius: 8px;
-            padding: 15px;
-            position: relative;
         }
         
-        .client-info label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: var(--secondary-text);
-        }
-        
-        .client-info input, .client-info textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #D1D1D6;
-            border-radius: 8px;
+        .section-title {
             font-size: 16px;
-            margin-bottom: 10px;
-            -webkit-appearance: none;
-        }
-        
-        .client-info textarea {
-            min-height: 80px;
-        }
-        
-        .remove-client {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background-color: #FF3B30;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        .button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 500;
-            width: 100%;
-            cursor: pointer;
-        }
-        
-        .button.secondary {
-            background-color: var(--secondary-color);
-            margin-top: 10px;
-        }
-        
-        .button.tertiary {
-            background-color: #FF9500;
-            margin-top: 10px;
-        }
-        
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-        
-        .summary-table th, .summary-table td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #D1D1D6;
-        }
-        
-        .summary-table th {
-            color: var(--secondary-text);
-            font-weight: 400;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        
-        .stat-card {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 24px;
             font-weight: 600;
             color: var(--primary-color);
+            margin-bottom: 12px;
+            padding-left: 10px;
+            border-left: 3px solid var(--primary-color);
         }
         
-        .stat-label {
-            font-size: 14px;
-            color: var(--secondary-text);
-        }
-        
+        /* Rotas Tab Styles */
         .checkpoint {
             display: flex;
             margin-bottom: 15px;
+            align-items: flex-start;
         }
         
         .checkpoint-time {
-            font-weight: 500;
             min-width: 70px;
+            font-weight: 500;
+            padding-top: 2px;
+        }
+        
+        .checkpoint-time input {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 14px;
+            width: 70px;
         }
         
         .checkpoint-details {
@@ -281,30 +120,92 @@
             padding-left: 10px;
         }
         
+        .checkpoint-type {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
         .checkpoint-address {
             color: var(--secondary-text);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .gps-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        
+        .client-info-block {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .client-field {
+            margin-bottom: 12px;
+        }
+        
+        .client-field label {
+            display: block;
+            font-size: 13px;
+            color: var(--secondary-text);
+            margin-bottom: 4px;
+        }
+        
+        .client-field input,
+        .client-field textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             font-size: 14px;
         }
         
-        .no-data {
-            text-align: center;
-            color: var(--secondary-text);
-            padding: 20px 0;
-            font-size: 16px;
+        .client-field textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+        
+        .remove-client {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--red-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
         }
         
         .lunch-toggle {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin: 15px 0;
         }
         
         .toggle-switch {
             position: relative;
             display: inline-block;
-            width: 50px;
-            height: 30px;
+            width: 46px;
+            height: 26px;
         }
         
         .toggle-switch input {
@@ -328,10 +229,10 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
-            left: 2px;
-            bottom: 2px;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
@@ -345,18 +246,126 @@
             transform: translateX(20px);
         }
         
-        .hidden {
-            display: none;
+        .action-buttons {
+            margin-top: 20px;
         }
         
-        .client-block {
-            margin-bottom: 15px;
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .button.secondary {
+            background-color: var(--orange-color);
+            margin-top: 10px;
+        }
+        
+        /* Horas Tab Styles */
+        .day-selector {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .day-selector label {
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .day-selector select {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .day-summary {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .day-total {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        .lunch-status {
+            font-size: 14px;
+            color: var(--secondary-text);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--secondary-text);
+        }
+        
+        .monthly-summary {
+            margin-top: 25px;
+        }
+        
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .summary-table th {
+            text-align: left;
+            padding: 8px;
+            font-weight: 500;
+            color: var(--secondary-text);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .summary-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
     <header>
         <h1>Route Tracker</h1>
+        <div class="date-display">quinta-feira, 27 de março de 2025</div>
     </header>
     
     <div class="tabs">
@@ -367,177 +376,128 @@
     
     <!-- Rotas Tab -->
     <div id="routes-tab" class="container">
-        <div class="card">
-            <h2 class="card-title">Checkpoints da Rota</h2>
+        <div class="section">
+            <div class="section-title">Checkpoints da Rota</div>
             
             <div class="checkpoint">
                 <div class="checkpoint-time">
                     <input type="time" id="start-time" value="08:00">
-                    <button class="gps-btn" onclick="getGPSLocation('start-time')">GPS</button>
                 </div>
                 <div class="checkpoint-details">
-                    <div>Início</div>
+                    <div class="checkpoint-type">Início</div>
                     <div class="checkpoint-address" id="start-address">Endereço de início</div>
+                    <button class="gps-btn" onclick="getGPSLocation('start-time', 'start-address')">GPS</button>
                 </div>
-            </div>
-            
-            <div class="lunch-toggle">
-                <div>Fez pausa para almoço?</div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="lunch-toggle">
-                    <span class="slider"></span>
-                </label>
             </div>
             
             <div id="client-blocks">
                 <!-- Client blocks will be added here dynamically -->
             </div>
             
-            <button class="button tertiary" id="add-client-btn">+ Adicionar Cliente</button>
+            <button class="button secondary" id="add-client-btn">+ Adicionar Cliente</button>
             
             <div class="checkpoint">
                 <div class="checkpoint-time">
                     <input type="time" id="end-time" value="17:00">
-                    <button class="gps-btn" onclick="getGPSLocation('end-time')">GPS</button>
                 </div>
                 <div class="checkpoint-details">
-                    <div>Fim</div>
+                    <div class="checkpoint-type">Fim</div>
                     <div class="checkpoint-address" id="end-address">Endereço de término</div>
+                    <button class="gps-btn" onclick="getGPSLocation('end-time', 'end-address')">GPS</button>
                 </div>
             </div>
-            
+        </div>
+        
+        <div class="lunch-toggle">
+            <div>Fez pausa para almoço?</div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="lunch-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div class="action-buttons">
             <button class="button" id="save-btn">SALVAR</button>
         </div>
     </div>
     
     <!-- Horas Tab -->
     <div id="hours-tab" class="container hidden">
-        <div class="card">
-            <h2 class="card-title">Horas Diárias</h2>
-            
-            <div class="time-input">
-                <label>Total de Horas</label>
-                <input type="text" value="0h 00m" readonly id="total-hours-day">
-            </div>
-            
-            <div class="time-input">
-                <label>Horas Trabalhadas</label>
-                <input type="text" value="0h 00m" readonly id="worked-hours">
+        <div class="day-selector">
+            <label>Selecione o dia:</label>
+            <select id="day-select">
+                <option value="27/03/2025" selected>27/03/2025</option>
+                <option value="26/03/2025">26/03/2025</option>
+                <option value="25/03/2025">25/03/2025</option>
+            </select>
+        </div>
+        
+        <div class="day-summary">
+            <div>Total de horas do dia</div>
+            <div class="day-total" id="day-total-hours">8h 30m</div>
+            <div class="lunch-status" id="lunch-status">Com pausa para almoço</div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Estatísticas</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Dias trabalhados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Dias sem almoço</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">7h 45m</div>
+                    <div class="stat-label">Média por dia</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Clientes atendidos</div>
+                </div>
             </div>
         </div>
         
-        <div class="card">
-            <h2 class="card-title">Resumo Mensal</h2>
+        <div class="monthly-summary">
+            <div class="section-title">Total Mensal</div>
+            <div class="day-total">116h 15m</div>
             
             <table class="summary-table">
-                <tr>
-                    <th>DATA</th>
-                    <th>HORAS</th>
-                </tr>
-                <tr>
-                    <td colspan="2" class="no-data">Nenhuma rota registrada este mês</td>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Horas</th>
+                        <th>Almoço</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>27/03/2025</td>
+                        <td>8h 30m</td>
+                        <td>Sim</td>
+                    </tr>
+                    <tr>
+                        <td>26/03/2025</td>
+                        <td>7h 15m</td>
+                        <td>Não</td>
+                    </tr>
+                    <tr>
+                        <td>25/03/2025</td>
+                        <td>8h 00m</td>
+                        <td>Sim</td>
+                    </tr>
+                </tbody>
             </table>
-        </div>
-        
-        <div class="card">
-            <h2 class="card-title">Total Mensal</h2>
-            <div class="stat-value">0h 00m</div>
         </div>
     </div>
     
     <!-- Histórico Tab -->
     <div id="history-tab" class="container hidden">
-        <div class="card">
-            <h2 class="card-title">Histórico de Rotas</h2>
-            
-            <div class="card">
-                <h3 class="card-title">Calendário</h3>
-                <p>Selecione uma data para ver as rotas</p>
-                
-                <table class="calendar">
-                    <thead>
-                        <tr>
-                            <th>dom</th>
-                            <th>seg</th>
-                            <th>ter</th>
-                            <th>qua</th>
-                            <th>qui</th>
-                            <th>sex</th>
-                            <th>sab</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>23</td>
-                            <td>24</td>
-                            <td>25</td>
-                            <td>26</td>
-                            <td><span class="current-day">27</span></td>
-                            <td>28</td>
-                            <td>1</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>3</td>
-                            <td>4</td>
-                            <td>5</td>
-                            <td>6</td>
-                            <td>7</td>
-                            <td>8</td>
-                        </tr>
-                        <tr>
-                            <td>9</td>
-                            <td>10</td>
-                            <td>11</td>
-                            <td>12</td>
-                            <td>13</td>
-                            <td>14</td>
-                            <td>15</td>
-                        </tr>
-                        <tr>
-                            <td>16</td>
-                            <td>17</td>
-                            <td>18</td>
-                            <td>19</td>
-                            <td>20</td>
-                            <td>21</td>
-                            <td>22</td>
-                        </tr>
-                        <tr>
-                            <td>23</td>
-                            <td>24</td>
-                            <td>25</td>
-                            <td>26</td>
-                            <td>27</td>
-                            <td>28</td>
-                            <td>29</td>
-                        </tr>
-                        <tr>
-                            <td>30</td>
-                            <td>31</td>
-                            <td>1</td>
-                            <td>2</td>
-                            <td>3</td>
-                            <td>4</td>
-                            <td>5</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="card">
-                <h3 class="card-title">Filtro</h3>
-                <p>Buscar por cliente, endereço ou notas</p>
-                <input type="text" class="search-input" placeholder="Buscar..." id="history-search">
-                <p id="selected-date">Data selecionada: 27/03/2025</p>
-                <p>0 rotas encontradas</p>
-            </div>
-            
-            <div class="card">
-                <h3 class="card-title">Rotas em 27/03/2025</h3>
-                <p class="no-data">Nenhuma rota encontrada para esta data</p>
-            </div>
+        <div class="section">
+            <div class="section-title">Histórico de Rotas</div>
+            <p style="text-align: center; color: var(--secondary-text);">Nenhuma rota encontrada</p>
         </div>
     </div>
     
@@ -547,41 +507,39 @@
         <div class="client-block">
             <div class="checkpoint">
                 <div class="checkpoint-time">
-                    <input type="time" class="client-arrival-time" value="12:00">
-                    <button class="gps-btn" onclick="getGPSLocation(this)">GPS</button>
+                    <input type="time" class="client-arrival-time" value="10:00">
                 </div>
                 <div class="checkpoint-details">
-                    <div>Chegada no Cliente</div>
+                    <div class="checkpoint-type">Chegada no Cliente</div>
                     <div class="checkpoint-address client-arrival-address">Endereço do cliente</div>
+                    <button class="gps-btn" onclick="getGPSLocation(this)">GPS</button>
                 </div>
             </div>
             
-            <div class="client-info">
+            <div class="client-info-block">
                 <button class="remove-client" onclick="removeClientBlock(this)">×</button>
-                <div>
+                <div class="client-field">
                     <label>Nome do Cliente</label>
-                    <input type="text" class="client-name" placeholder="Digite o nome do cliente">
+                    <input type="text" class="client-name" placeholder="Digite o nome">
                 </div>
-                
-                <div>
+                <div class="client-field">
                     <label>Endereço do Cliente</label>
-                    <input type="text" class="client-address" placeholder="Digite o endereço do cliente">
+                    <input type="text" class="client-address" placeholder="Digite o endereço">
                 </div>
-                
-                <div>
+                <div class="client-field">
                     <label>Notas do Serviço</label>
-                    <textarea class="service-notes" placeholder="Adicione notas sobre o serviço"></textarea>
+                    <textarea class="service-notes" placeholder="Adicione notas"></textarea>
                 </div>
             </div>
             
             <div class="checkpoint">
                 <div class="checkpoint-time">
-                    <input type="time" class="client-departure-time" value="13:00">
-                    <button class="gps-btn" onclick="getGPSLocation(this)">GPS</button>
+                    <input type="time" class="client-departure-time" value="11:00">
                 </div>
                 <div class="checkpoint-details">
-                    <div>Saída do Cliente</div>
+                    <div class="checkpoint-type">Saída do Cliente</div>
                     <div class="checkpoint-address client-departure-address">Endereço do cliente</div>
+                    <button class="gps-btn" onclick="getGPSLocation(this)">GPS</button>
                 </div>
             </div>
         </div>
@@ -604,22 +562,11 @@
             // Add event listeners
             document.getElementById('add-client-btn').addEventListener('click', addClientBlock);
             document.getElementById('save-btn').addEventListener('click', saveRoute);
-            document.getElementById('lunch-toggle').addEventListener('change', calculateHours);
+            document.getElementById('lunch-toggle').addEventListener('change', updateLunchStatus);
+            document.getElementById('day-select').addEventListener('change', updateDaySummary);
             
-            // Time inputs that should trigger calculation
-            document.getElementById('start-time').addEventListener('change', calculateHours);
-            document.getElementById('end-time').addEventListener('change', calculateHours);
-            
-            // Set current date
+            // Update current date
             updateCurrentDate();
-            
-            // Focus on inputs when tapped (iOS fix)
-            const inputs = document.querySelectorAll('input, textarea');
-            inputs.forEach(input => {
-                input.addEventListener('touchstart', function() {
-                    this.focus();
-                });
-            });
         });
         
         // Show/hide tabs
@@ -640,11 +587,6 @@
             if (event && event.currentTarget) {
                 event.currentTarget.classList.add('active');
             }
-            
-            // If showing hours tab, update calculations
-            if (tabName === 'hours') {
-                calculateHours();
-            }
         }
         
         // Add a new client block
@@ -653,12 +595,6 @@
             const newBlock = document.createElement('div');
             newBlock.innerHTML = clientBlockTemplate;
             clientBlocks.appendChild(newBlock);
-            
-            // Add event listeners to new time inputs
-            const timeInputs = newBlock.querySelectorAll('input[type="time"]');
-            timeInputs.forEach(input => {
-                input.addEventListener('change', calculateHours);
-            });
         }
         
         // Remove a client block
@@ -666,62 +602,26 @@
             const clientBlock = button.closest('.client-block');
             if (document.querySelectorAll('.client-block').length > 1) {
                 clientBlock.remove();
-                calculateHours();
             } else {
                 alert("Você precisa ter pelo menos um cliente cadastrado.");
             }
         }
         
-        // Calculate worked hours
-        function calculateHours() {
-            const startTime = document.getElementById('start-time').value;
-            const endTime = document.getElementById('end-time').value;
-            const lunchBreak = document.getElementById('lunch-toggle').checked;
-            
-            if (!startTime || !endTime) return;
-            
-            // Calculate total hours
-            const start = new Date(`2000-01-01T${startTime}`);
-            const end = new Date(`2000-01-01T${endTime}`);
-            
-            let diffMs = end - start;
-            if (diffMs < 0) {
-                // Handle overnight (just add 24 hours)
-                diffMs += 24 * 60 * 60 * 1000;
-            }
-            
-            const diffMins = Math.floor(diffMs / 60000);
-            const hours = Math.floor(diffMins / 60);
-            const mins = diffMins % 60;
-            
-            // Display total hours
-            document.getElementById('total-hours-day').value = `${hours}h ${mins.toString().padStart(2, '0')}m`;
-            
-            // Calculate worked hours (subtract 1h if lunch break)
-            let workedHours = diffMins;
-            if (lunchBreak) {
-                workedHours = Math.max(0, workedHours - 60); // Subtract 1 hour
-            }
-            
-            const workedH = Math.floor(workedHours / 60);
-            const workedM = workedHours % 60;
-            
-            // Display worked hours
-            document.getElementById('worked-hours').value = `${workedH}h ${workedM.toString().padStart(2, '0')}m`;
-        }
-        
-        // Simulate GPS location (in a real app, this would use the Geolocation API)
-        function getGPSLocation(element) {
+        // Simulate GPS location
+        function getGPSLocation(element, addressId = null) {
             // This is a simulation - in a real app, you would use:
             // navigator.geolocation.getCurrentPosition()
             
-            let timeInput;
+            let timeInput, addressElement;
+            
             if (typeof element === 'string') {
                 // If element is an ID
                 timeInput = document.getElementById(element);
+                addressElement = document.getElementById(addressId);
             } else {
-                // If element is a button next to the input
-                timeInput = element.parentElement.querySelector('input[type="time"]');
+                // If element is a button
+                timeInput = element.closest('.checkpoint').querySelector('input[type="time"]');
+                addressElement = element.closest('.checkpoint').querySelector('.checkpoint-address');
             }
             
             // Set current time
@@ -730,54 +630,48 @@
             const mins = now.getMinutes().toString().padStart(2, '0');
             timeInput.value = `${hours}:${mins}`;
             
-            // Simulate address (in real app, you would reverse geocode the coordinates)
-            let addressElement;
-            if (element === 'start-time') {
-                addressElement = document.getElementById('start-address');
-                addressElement.textContent = "Endereço de início via GPS";
-            } else if (element === 'end-time') {
-                addressElement = document.getElementById('end-address');
-                addressElement.textContent = "Endereço de término via GPS";
-            } else {
-                addressElement = element.closest('.checkpoint').querySelector('.checkpoint-address');
-                addressElement.textContent = "Endereço do cliente via GPS";
-            }
-            
-            // Recalculate hours if needed
-            if (timeInput.id === 'start-time' || timeInput.id === 'end-time') {
-                calculateHours();
+            // Simulate address
+            if (addressElement) {
+                addressElement.textContent = "Localização obtida via GPS";
             }
             
             alert("Localização obtida via GPS e hora definida para agora.");
+        }
+        
+        // Update lunch status display
+        function updateLunchStatus() {
+            const lunchToggle = document.getElementById('lunch-toggle');
+            const lunchStatus = document.getElementById('lunch-status');
+            
+            if (lunchToggle.checked) {
+                lunchStatus.textContent = "Com pausa para almoço";
+            } else {
+                lunchStatus.textContent = "Sem pausa para almoço";
+            }
+        }
+        
+        // Update day summary when day is selected
+        function updateDaySummary() {
+            const daySelect = document.getElementById('day-select');
+            const selectedDay = daySelect.value;
+            
+            // In a real app, you would fetch data for the selected day
+            document.getElementById('day-total-hours').textContent = "8h 30m";
+            document.getElementById('lunch-status').textContent = "Com pausa para almoço";
         }
         
         // Save route data
         function saveRoute() {
             // In a real app, this would save to localStorage or a backend
             alert("Rota salva com sucesso!");
-            calculateHours();
         }
         
         // Update current date display
         function updateCurrentDate() {
             const now = new Date();
-            const day = now.getDate();
-            const month = now.getMonth() + 1;
-            const year = now.getFullYear();
-            
-            // Update date in history tab
-            const dateElements = document.querySelectorAll('.current-day');
-            dateElements.forEach(el => {
-                if (parseInt(el.textContent) === day) {
-                    el.textContent = day;
-                }
-            });
-            
-            // Update selected date text
-            const dateText = document.getElementById('selected-date');
-            if (dateText) {
-                dateText.textContent = `Data selecionada: ${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
-            }
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            const dateStr = now.toLocaleDateString('pt-BR', options);
+            document.querySelector('.date-display').textContent = dateStr;
         }
     </script>
 </body>
